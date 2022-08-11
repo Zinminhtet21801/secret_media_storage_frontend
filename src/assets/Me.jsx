@@ -1,5 +1,10 @@
 import { FaGithub, FaTwitter, FaLinkedin } from "react-icons/fa";
-
+import {
+  MdPhone,
+  MdEmail,
+  MdLocationOn,
+  MdOutlineEmail,
+} from 'react-icons/md';
 export const SOCIAL_LINKS = [
   {
     id: 1,
@@ -20,3 +25,20 @@ export const SOCIAL_LINKS = [
     icon: <FaLinkedin />,
   },
 ];
+
+export const companyDetail = [
+  {
+    name: "phone",
+    contact: "+95-9799545310",
+    icon: <MdPhone color="#1970F1" size="20px"  />
+  },
+  {
+    name: "email",
+    contact: "zetminhtin@gmail.com",
+    icon: <MdEmail color="#1970F1" size="20px"  />
+  },{
+    name: "location",
+    contact: "Yangon, Myanmar",
+    icon: <MdLocationOn color="#1970F1" size="20px"  />
+  }
+]
