@@ -17,7 +17,7 @@ import { IoMdAddCircle } from "react-icons/io";
 import { motion } from "framer-motion";
 import ModalComponent from "./ModalComponent";
 import { AttachmentIcon, DeleteIcon } from "@chakra-ui/icons";
-import axios from "axios";
+import axios, { CancelToken, isCancel } from "axios";
 import Toast from "./Toast";
 import { useRecoilState } from "recoil";
 import { progressState } from "../atoms/atoms";
@@ -40,11 +40,14 @@ const Compose1 = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [chosenFiles, setChosenFiles] = useState([]);
   const fileInputRef = useRef(null);
+  const cancelFileUpload = useRef();
   let progressBars = [];
 
   function closeModal() {
     setIsModalOpen(false);
   }
+
+  console.log(chosenFiles);
 
   const handleAddFile = (e) => {
     const newFile = e.target.files[0];
@@ -58,6 +61,7 @@ const Compose1 = () => {
   };
 
   const uploadFiles = async () => {
+    closeModal()
     if (chosenFiles.length > 0) {
       count++;
       console.log(toastIdRef.current, "currebnt biuildsfjlkj");
@@ -81,7 +85,7 @@ const Compose1 = () => {
       });
       const formData = new FormData();
       formData.append("files", chosenFiles[0]);
-      console.log(formData, "formData");
+      console.log(chosenFiles[0].name, "formData");
       let res = await axios({
         method: "post",
         url: `${baseURL}media/uploadFiles`,
@@ -90,10 +94,8 @@ const Compose1 = () => {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-        
         onUploadProgress: (progressEvent) => {
           console.log(
-            count,
             progressEvent,
             progressEvent.loaded,
             progressEvent.total,
@@ -125,7 +127,7 @@ const Compose1 = () => {
                 position: "relative",
               },
             });
-          }else{
+          } else {
             toast.update(count, {
               id: count,
               icon: (
@@ -148,10 +150,12 @@ const Compose1 = () => {
             });
           }
         },
+
         // },
       });
 
       toast.close(toastIdRef.current);
+      setChosenFiles([]);
       console.log(res);
     }
   };

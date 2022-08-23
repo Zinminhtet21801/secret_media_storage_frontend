@@ -7,7 +7,6 @@ const Home = () => {
     <Box>
       <Box w={"80%"}>
         <HStack>
-            {/* <Compose /> */}
             <Compose1 />
         </HStack>
       </Box>
