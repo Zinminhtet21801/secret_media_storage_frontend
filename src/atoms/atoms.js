@@ -8,11 +8,3 @@ export const loginState = atom({
   },
 });
 
-export const progressState = atom({
-  key: "progress",
-  default: {
-    progress: 0,
-    title: "La Ou",
-    description: "La Ou Srr",
-  },
-});
