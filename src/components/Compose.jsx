@@ -7,38 +7,23 @@ import {
   ModalHeader,
   Text,
   useToast,
-  CircularProgress,
-  CircularProgressLabel,
-  Center,
-  // useDisclosure,
 } from "@chakra-ui/react";
-import React, { useContext, useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { IoMdAddCircle } from "react-icons/io";
 import { motion } from "framer-motion";
 import ModalComponent from "./ModalComponent";
 import { AttachmentIcon, DeleteIcon } from "@chakra-ui/icons";
 import axios from "axios";
-import Toast from "./Toast";
-import { useRecoilState } from "recoil";
-import { progressState } from "../atoms/atoms";
+import { toastConfig } from "../services/toastConfig";
 
 const baseURL = import.meta.env.VITE_BASE_URL;
 let count = 0;
 
-// const ToastIcon = () => (
-//   <Center position={"absolute"}>
-//     <CircularProgress value={progress}>
-//       <CircularProgressLabel>{progress}</CircularProgressLabel>
-//     </CircularProgress>
-//   </Center>
-// );
-
 const Compose = () => {
   const toast = useToast();
-  const toastIdRef = useRef();
-  const [progress, setProgress] = useRecoilState(progressState);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [chosenFiles, setChosenFiles] = useState([]);
+  const [uploadingFiles, setUploadingFiles] = useState([]);
   const fileInputRef = useRef(null);
 
   function closeModal() {
@@ -46,92 +31,108 @@ const Compose = () => {
   }
 
   const handleAddFile = (e) => {
+    // const newFile = e.target.files[0];
+    // setChosenFiles((old) => [...old, newFile]);
+    console.log("HERERE", e);
     const newFile = e.target.files[0];
-    console.log([...chosenFiles, newFile], "hherlerj");
-    setChosenFiles((old) => [...old, newFile]);
+    newFile && setChosenFiles([newFile]);
   };
 
   const handleFileChange = (files) => {
-    // const newFile = =
+    console.log("removeFile", files);
     setChosenFiles([...files]);
   };
 
   const uploadFiles = async () => {
-    if (chosenFiles.length > 0) {
-      console.log(toastIdRef.current, "currebnt biuildsfjlkj");
+    let fileName = chosenFiles[0].name;
+    setChosenFiles([]);
+    closeModal();
+    if (
+      toast.isActive(fileName) ||
+      uploadingFiles.find((file) => file === fileName)
+    ) {
       count++;
-      let oldProgress = null;
-      // toastIdRef.current = toast({
-      //   id: count,
-      //   icon: (
-      //     <Center position={"absolute"}>
-      //       <CircularProgress value={0}>
-      //         <CircularProgressLabel>{0}</CircularProgressLabel>
-      //       </CircularProgress>
-      //     </Center>
-      //   ),
-      //   title: "Uploading.",
-      //   description: "Uploading file.",
-      //   status: "loading",
-      //   // duration: 90000,
-      //   isClosable: true,
-      //   containerStyle: {
-      //     position: "relative",
-      //   },
-      // });
+      return toast({
+        id: fileName + count,
+        duration: 3000,
+        render: ({ id, onClose }) =>
+          toastConfig(
+            id,
+            onClose,
+            fileName,
+            `${fileName} is already in queue.`,
+            100
+          ),
+      });
+    }
+    if (chosenFiles.length > 0) {
+      setUploadingFiles((files) => [fileName, ...files]);
+      toast({
+        id: fileName,
+        duration: 3000,
+        status: "loading",
+        render: ({ id, onClose }) =>
+          toastConfig(id, onClose, fileName, `Uploading...`, 0),
+      });
       const formData = new FormData();
       formData.append("files", chosenFiles[0]);
-      console.log(formData, "formData");
-      const res = await axios({
-        method: "post",
-        url: `${baseURL}media/uploadFiles`,
-        data: formData,
-        withCredentials: true,
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        onUploadProgress: (progressEvent) => {
-          if (oldProgress == null) {
-            oldProgress = progressEvent;
-          }
-          console.log(
-            oldProgress == progressEvent,
-            progressEvent,
-            progressEvent.loaded,
-            progressEvent.total,
-            count,
-            toastIdRef,
-            "progressEvent"
-          );
-          let pendingProgress = Math.round(
-            (progressEvent.loaded / progressEvent.total) * 100
-          );
-          // if (toastIdRef.current) {
-          // toast.update(count, {
-          //   id: count,
-          //   icon: (
-          //     <Center position={"absolute"}>
-          //       <CircularProgress value={pendingProgress}>
-          //         <CircularProgressLabel>
-          //           {pendingProgress}
-          //         </CircularProgressLabel>
-          //       </CircularProgress>
-          //     </Center>
-          //   ),
-          //   title: "Uploading.",
-          //   description: "Uploading file.",
-          //   status: "loading",
-          //   duration: null,
-          //   isClosable: true,
-          //   containerStyle: {
-          //     position: "relative",
-          //   },
-          // });
-        },
-        // },
-      });
-      toast.close(toastIdRef.current);
-      console.log(res);
+      try {
+        const res = await axios({
+          method: "post",
+          url: `${baseURL}media/uploadFiles`,
+          data: formData,
+          withCredentials: true,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          onUploadProgress: (progressEvent) => {
+            let pendingProgress = Math.round(
+              (progressEvent.loaded / progressEvent.total) * 100
+            );
+            if (pendingProgress === 100) {
+              toast.update(fileName, {
+                id: fileName,
+                duration: 3000,
+                status: "loading",
+                render: ({ id, onClose }) =>
+                  toastConfig(
+                    id,
+                    onClose,
+                    fileName,
+                    `Completed!!!`,
+                    pendingProgress
+                  ),
+              });
+              setUploadingFiles((files) =>
+                files.filter((file) => file !== fileName)
+              );
+            } else {
+              toast.update(fileName, {
+                id: fileName,
+                duration: null,
+                status: "loading",
+                render: ({ id, onClose }) =>
+                  toastConfig(
+                    id,
+                    onClose,
+                    fileName,
+                    `Uploading...`,
+                    pendingProgress
+                  ),
+              });
+            }
+          },
+        });
+      } catch (e) {
+        console.log(e, "Error: sdfsdafjklsj");
+        toast.update(fileName, {
+          id: fileName,
+          duration: 3000,
+          status: "loading",
+          render: ({ id, onClose }) =>
+            toastConfig(id, onClose, fileName, `Failed!!! Due to Network Error`, null),
+        });
+      }
     }
   };
 
@@ -175,6 +176,7 @@ const Compose = () => {
             <input
               ref={fileInputRef}
               type={"file"}
+              onClick={() => "this.value=null;"}
               onChange={(event) => handleAddFile(event)}
               style={{ display: "none" }}
               // multiple
@@ -189,6 +191,7 @@ const Compose = () => {
 export default Compose;
 
 const ModalBodyItem = ({ files, handleFileChange }) => {
+  console.log({ files });
   const removeFile = (name) => {
     handleFileChange(files?.filter((file) => file?.name !== name));
   };
