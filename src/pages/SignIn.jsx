@@ -11,6 +11,7 @@ import {
   Heading,
   Text,
   useColorModeValue,
+  useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useFormik } from "formik";
@@ -20,34 +21,53 @@ import { loginState } from "../atoms/atoms";
 import InputWithLabel from "../components/InputWithLabel";
 import PasswordForm from "../components/passwordForm";
 import { signInSchema } from "../schemas/signIn.schema";
+import { toastConfig } from "../services/toastConfig";
 
-const baseURL = import.meta.env.VITE_BASE_URL
-
+const baseURL = import.meta.env.VITE_BASE_URL;
+let errorToastCount = 0;
 
 export default function SignIn() {
   const [user, setUser] = useRecoilState(loginState);
   const [location, setLocation] = useLocation();
+  const toast = useToast();
+  console.log(errorToastCount);
 
   const onSubmit = async (values, actions) => {
-    const res = await axios.post(
-      `${baseURL}user/login`,
-      JSON.stringify(values),
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${document.cookie.split("=")[1]}`,
-        },
-        withCredentials: true,
+    try {
+      const res = await axios.post(
+        `${baseURL}user/login`,
+        JSON.stringify(values),
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${document.cookie.split("=")[1]}`,
+          },
+          withCredentials: true,
+        }
+      );
+      console.log(res.response);
+      if (res.status === 200) {
+        actions.resetForm();
+        setUser((oldUser) => ({
+          ...oldUser,
+          fullName: res.data.fullName,
+          email: res.data.email,
+        }));
+        setLocation("/home");
       }
-    );
-    if (res.status === 200) {
-      actions.resetForm();
-      setUser((oldUser) => ({
-        ...oldUser,
-        fullName: res.data.fullName,
-        email: res.data.email,
-      }));
-      setLocation("/home");
+    } catch (e) {
+      const { error, message, statusCode } = e.response.data;
+      ++errorToastCount;
+      const errorId = `SignInError${message}${errorToastCount}`;
+      console.log(errorId);
+      toast({
+        id: errorId,
+        duration: 3000,
+        status: "error",
+        position: "bottom-left",
+        render: ({ id, onClose }) =>
+          toastConfig(id, onClose, "Sign in failed", message, null),
+      });
     }
   };
   const {

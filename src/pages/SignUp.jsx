@@ -12,6 +12,7 @@ import {
   Heading,
   Text,
   useColorModeValue,
+  useToast,
   // Link,
 } from "@chakra-ui/react";
 import { useState } from "react";
@@ -24,31 +25,50 @@ import axios from "axios";
 import { useRecoilState } from "recoil";
 import { loginState } from "../atoms/atoms";
 import { Link, useLocation } from "wouter";
+import { toastConfig } from "../services/toastConfig";
 
 const baseURL = import.meta.env.VITE_BASE_URL;
+let errorToastCount = 0;
 
 export default function SignUp() {
   const [user, setUser] = useRecoilState(loginState);
   const [location, setLocation] = useLocation();
+  const toast = useToast();
+
   const onSubmit = async (values, actions) => {
-    const res = await axios.post(
-      `${baseURL}user/create`,
-      JSON.stringify(values),
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
+    try {
+      const res = await axios.post(
+        `${baseURL}user/create`,
+        JSON.stringify(values),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+      if (res.status === 200) {
+        actions.resetForm();
+        setUser((oldUser) => ({
+          ...oldUser,
+          fullName: res.data.fullName,
+          email: res.data.email,
+        }));
+        setLocation("/home");
       }
-    );
-    if (res.status === 200) {
-      actions.resetForm();
-      setUser((oldUser) => ({
-        ...oldUser,
-        fullName: res.data.fullName,
-        email: res.data.email,
-      }));
-      setLocation("/home");
+    } catch (e) {
+      const { error, message, statusCode } = e.response.data;
+      ++errorToastCount;
+      const errorId = `SignUpError${message}${errorToastCount}`;
+      console.log(errorId);
+      toast({
+        id: errorId,
+        duration: 3000,
+        status: "error",
+        position: "bottom-left",
+        render: ({ id, onClose }) =>
+          toastConfig(id, onClose, "Sign Up failed", message, null),
+      });
     }
   };
   const {
