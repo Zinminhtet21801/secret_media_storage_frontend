@@ -1,5 +1,5 @@
 import { ChakraProvider, createStandaloneToast } from "@chakra-ui/react";
-import React, { createContext, useState } from "react";
+import React from "react";
 import ReactDOM from "react-dom/client";
 import { RecoilRoot } from "recoil";
 import App from "./App";
