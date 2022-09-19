@@ -19,7 +19,7 @@ function ModalComponent({
   secondButtonAction,
   secondButtonDisable,
 }) {
-  console.log(secondButtonDisable);
+  // console.log(secondButtonDisable);
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <>
