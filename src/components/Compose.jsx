@@ -15,15 +15,23 @@ import ModalComponent from "./ModalComponent";
 import { AttachmentIcon, DeleteIcon } from "@chakra-ui/icons";
 import axios from "axios";
 import { toastConfig } from "../services/toastConfig";
+import { useMutation, useQueryClient } from "react-query";
 
 const baseURL = import.meta.env.VITE_BASE_URL;
 let count = 0;
 
 const Compose = () => {
+  const queryClient = useQueryClient();
   const toast = useToast();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [chosenFiles, setChosenFiles] = useState([]);
   const [uploadingFiles, setUploadingFiles] = useState([]);
+  const { isLoading, isError, error, mutate } = useMutation(uploadFiles, {
+    onSuccess: () => {
+      queryClient.invalidateQueries("itemsQuantity");
+      queryClient.refetchQueries("itemsQuantity");
+    },
+  });
   const fileInputRef = useRef(null);
 
   function closeModal() {
@@ -43,7 +51,11 @@ const Compose = () => {
     setChosenFiles([...files]);
   };
 
-  const uploadFiles = async () => {
+  const Upload = () => {
+    mutate({ id: "itemsQuantity", count });
+  };
+
+  async function uploadFiles() {
     let fileName = chosenFiles[0].name;
     setChosenFiles([]);
     closeModal();
@@ -130,11 +142,17 @@ const Compose = () => {
           duration: 3000,
           status: "loading",
           render: ({ id, onClose }) =>
-            toastConfig(id, onClose, fileName, `Failed!!! Due to Network Error`, null),
+            toastConfig(
+              id,
+              onClose,
+              fileName,
+              `Failed!!! Due to Network Error`,
+              null
+            ),
         });
       }
     }
-  };
+  }
 
   return (
     <>
@@ -143,7 +161,7 @@ const Compose = () => {
           borderWidth={1}
           borderRadius={20}
           p={3}
-          m={2}
+          // m={2}
           _hover={{ cursor: "pointer" }}
         >
           <IoMdAddCircle size={25} />
@@ -155,7 +173,7 @@ const Compose = () => {
           isModalOpen={isModalOpen}
           closeModal={closeModal}
           secondButtonName={"Upload"}
-          secondButtonAction={uploadFiles}
+          secondButtonAction={Upload}
           secondButtonDisable={chosenFiles.length > 0 ? false : true}
         >
           <ModalHeader>Modal Title</ModalHeader>
