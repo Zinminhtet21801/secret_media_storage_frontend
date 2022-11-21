@@ -24,7 +24,6 @@ import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { loginState } from "../atoms/atoms";
 import { Link, useLocation } from "wouter";
 
-
 const baseURL = import.meta.env.VITE_BASE_URL;
 
 // const NavLink = ({ children }) => (
@@ -47,8 +46,6 @@ export default function Nav() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [user, setUser] = useRecoilState(loginState);
   const [location, setLocation] = useLocation();
-
-  
 
   const logout = async () => {
     if (document.cookie) {
@@ -129,7 +126,7 @@ export default function Nav() {
                     rounded={"full"}
                     variant={"link"}
                     cursor={"pointer"}
-                    minW={0}
+                    w={0}
                   >
                     <Avatar
                       size={"sm"}
