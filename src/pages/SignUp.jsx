@@ -38,7 +38,7 @@ export default function SignUp() {
   const onSubmit = async (values, actions) => {
     try {
       const res = await axios.post(
-        `${baseURL}user/create`,
+        `${baseURL}/user/create`,
         JSON.stringify(values),
         {
           headers: {

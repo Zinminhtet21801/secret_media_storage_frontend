@@ -35,7 +35,7 @@ export default function SignIn() {
   const onSubmit = async (values, actions) => {
     try {
       const res = await axios.post(
-        `${baseURL}user/login`,
+        `${baseURL}/user/login`,
         JSON.stringify(values),
         {
           headers: {

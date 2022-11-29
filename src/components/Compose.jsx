@@ -91,7 +91,7 @@ const Compose = () => {
       try {
         const res = await axios({
           method: "post",
-          url: `${baseURL}media/uploadFiles`,
+          url: `${baseURL}/media/uploadFiles`,
           data: formData,
           withCredentials: true,
           headers: {

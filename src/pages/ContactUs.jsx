@@ -52,7 +52,7 @@ export default function ContactUs() {
   const onSubmit = async (values, actions) => {
     try {
       const res = await axios.post(
-        `${baseURL}user/contact`,
+        `${baseURL}/user/contact`,
         JSON.stringify(values),
         {
           headers: {

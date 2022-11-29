@@ -49,7 +49,7 @@ export default function Nav() {
 
   const logout = async () => {
     if (document.cookie) {
-      const res = await axios.get(`${baseURL}user/logout`, {
+      const res = await axios.get(`${baseURL}/user/logout`, {
         withCredentials: true, // make sure to include this madafaka to clear the cookie
         headers: {
           Authorization: `Bearer ${document.cookie.split("=")[1]}`,
@@ -68,7 +68,7 @@ export default function Nav() {
 
   const getProfile = async () => {
     if (document.cookie.split("=")[1]) {
-      const res = await axios.get(`${baseURL}user/profile`, {
+      const res = await axios.get(`${baseURL}/user/profile`, {
         headers: {
           Authorization: `Bearer ${document.cookie.split("=")[1]}`,
         },
