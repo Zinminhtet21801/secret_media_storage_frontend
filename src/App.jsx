@@ -2,7 +2,7 @@ import { useState } from "react";
 import "./App.css";
 import Nav from "./components/NavBar";
 import Footer from "./components/Footer";
-import { Route, Switch } from "wouter";
+import { Route, Switch,  } from "wouter";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import ForgotPasswordForm from "./pages/ForgotPassword";
@@ -18,7 +18,8 @@ function App() {
       <Switch>
         <Box minH={"86.5vh"}>
           <Route path="/" component={Landing} />
-          <Route path="/home" component={Home} />
+          <Route path="/home/:rest*" component={Home} />
+
           <Route path="/signin" component={SignIn} />
           <Route path="/signup" component={SignUp} />
           <Route path="/forgot-password" component={ForgotPasswordForm} />
