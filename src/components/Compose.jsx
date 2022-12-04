@@ -20,7 +20,7 @@ import { useMutation, useQueryClient } from "react-query";
 const baseURL = import.meta.env.VITE_BASE_URL;
 let count = 0;
 
-const Compose = () => {
+const Compose = ({ category = "image" }) => {
   const queryClient = useQueryClient();
   const toast = useToast();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,6 +30,8 @@ const Compose = () => {
     onSuccess: () => {
       queryClient.invalidateQueries("itemsQuantity");
       queryClient.refetchQueries("itemsQuantity");
+      queryClient.invalidateQueries(`${category}Items`);
+      queryClient.refetchQueries(`${category}Items`);
     },
   });
   const fileInputRef = useRef(null);
@@ -136,7 +138,7 @@ const Compose = () => {
           },
         });
       } catch (e) {
-        console.log(e, "Error: sdfsdafjklsj");
+        console.log(e.response.data.message, "Error: sdfsdafjklsj");
         toast.update(fileName, {
           id: fileName,
           duration: 3000,
@@ -146,7 +148,7 @@ const Compose = () => {
               id,
               onClose,
               fileName,
-              `Failed!!! Due to Network Error`,
+              e?.response?.data?.message,
               null
             ),
         });
