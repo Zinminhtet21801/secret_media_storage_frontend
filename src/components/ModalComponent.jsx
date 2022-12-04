@@ -1,15 +1,12 @@
 import {
   Button,
   Modal,
-  ModalBody,
-  ModalCloseButton,
   ModalContent,
   ModalFooter,
   ModalHeader,
   ModalOverlay,
   useDisclosure,
 } from "@chakra-ui/react";
-console.log("JSDLKFJDSKL");
 
 function ModalComponent({
   children,
@@ -19,7 +16,6 @@ function ModalComponent({
   secondButtonAction,
   secondButtonDisable,
 }) {
-  // console.log(secondButtonDisable);
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <>
@@ -30,7 +26,10 @@ function ModalComponent({
           closeModal();
         }}
       >
-        <ModalOverlay />
+        <ModalOverlay
+          bg="blackAlpha.300"
+          backdropFilter="blur(10px) hue-rotate(90deg)"
+        />
         <ModalContent>
           {children}
           <ModalFooter>
