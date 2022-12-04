@@ -2,7 +2,7 @@ import axios from "axios";
 
 import { baseURL } from "../main.jsx";
 
-export const getCategoriesItems = async (url = "image", page = 1) => {
+export const getCategoriesItems = async (url, page = 1) => {
   // write some codes to fetch items count from server
   try {
     const { data } = await axios.get(
