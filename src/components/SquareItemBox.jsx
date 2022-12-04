@@ -1,14 +1,28 @@
 import { Box, Divider, HStack, Text, VStack } from "@chakra-ui/react";
 import React from "react";
 
-function ItemBox({ name, quantity, align, separatorLine }) {
+function ItemBox({ name, quantity, align, separatorLine, setCategoryHandler }) {
   return (
-    <Box borderWidth={1} p={3} _hover={{ cursor: "pointer" }}>
+    <Box
+      borderWidth={1}
+      p={3}
+      _hover={{ cursor: "pointer" }}
+      onClick={() => setCategoryHandler(name.toLowerCase())}
+    >
       <AlignDiv align={align}>
         <Text w={50} textAlign={"left"}>
           {name}
         </Text>
-        {separatorLine ? <Divider orientation='vertical' color={'whiteAlpha.50'} width={2} height={'16'} /> : <Divider />}
+        {separatorLine ? (
+          <Divider
+            orientation="vertical"
+            color={"whiteAlpha.50"}
+            width={2}
+            height={"16"}
+          />
+        ) : (
+          <Divider />
+        )}
         <Text>{quantity}</Text>
       </AlignDiv>
     </Box>
@@ -22,6 +36,5 @@ function AlignDiv({ children, align }) {
     <VStack alignItems={"center"}>{children}</VStack>
   );
 }
-
 
 export default ItemBox;
