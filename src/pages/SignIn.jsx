@@ -17,44 +17,45 @@ import axios from "axios";
 import { useFormik } from "formik";
 import { useRecoilState } from "recoil";
 import { Link, useLocation } from "wouter";
-import { loginState } from "../atoms/atoms";
+import { userState } from "../atoms/atoms";
 import InputWithLabel from "../components/InputWithLabel";
 import PasswordForm from "../components/passwordForm";
 import { signInSchema } from "../schemas/signIn.schema";
 import { toastConfig } from "../services/toastConfig";
+import { useAuth } from "../components/hooks/useAuth";
 
 const baseURL = import.meta.env.VITE_BASE_URL;
 let errorToastCount = 0;
 
 export default function SignIn() {
-  const [user, setUser] = useRecoilState(loginState);
+  const [user, setUser] = useRecoilState(userState);
   const [location, setLocation] = useLocation();
   const toast = useToast();
-  console.log(errorToastCount);
-
+  const { signIn } = useAuth();
   const onSubmit = async (values, actions) => {
     try {
-      const res = await axios.post(
-        `${baseURL}/user/login`,
-        JSON.stringify(values),
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${document.cookie.split("=")[1]}`,
-          },
-          withCredentials: true,
-        }
-      );
-      console.log(res.response);
-      if (res.status === 200) {
-        actions.resetForm();
-        setUser((oldUser) => ({
-          ...oldUser,
-          fullName: res.data.fullName,
-          email: res.data.email,
-        }));
-        setLocation("/home");
-      }
+      await signIn(actions, values);
+      // const res = await axios.post(
+      //   `${baseURL}/user/login`,
+      //   JSON.stringify(values),
+      //   {
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       Authorization: `Bearer ${document.cookie.split("=")[1]}`,
+      //     },
+      //     withCredentials: true,
+      //   }
+      // );
+      // console.log(res.response);
+      // if (res.status === 200) {
+      //   actions.resetForm();
+      //   setUser((oldUser) => ({
+      //     ...oldUser,
+      //     fullName: res.data.fullName,
+      //     email: res.data.email,
+      //   }));
+      //   setLocation("/home");
+      // }
     } catch (e) {
       const { error, message, statusCode } = e.response.data;
       ++errorToastCount;

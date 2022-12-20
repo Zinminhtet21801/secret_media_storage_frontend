@@ -1,30 +1,58 @@
-import { ChakraProvider, createStandaloneToast } from "@chakra-ui/react";
 import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  QueryClient,
-  QueryClientProvider,
-} from "react-query";
+  ChakraProvider,
+  createStandaloneToast,
+  extendTheme,
+} from "@chakra-ui/react";
+import { QueryClientProvider } from "react-query";
 import React from "react";
-import ReactDOM from "react-dom/client";
+import ReactDOM, { createRoot } from "react-dom/client";
 import { RecoilRoot } from "recoil";
 import App from "./App";
 import "./index.css";
+import { queryClient } from "./react-query/queryClient";
+import { ReactQueryDevtools } from "react-query/devtools";
 
-const { ToastContainer, toast } = createStandaloneToast();
+let container = null;
+
+const breakpoints = {
+  sm: "320px",
+  md: "768px",
+  lg: "960px",
+  xl: "1200px",
+  "2xl": "1536px",
+};
+
+const { ToastContainer } = createStandaloneToast();
+
+const theme = extendTheme({ breakpoints });
 
 export const baseURL = import.meta.env.VITE_BASE_URL;
 
-const queryClient = new QueryClient();
-
-ReactDOM.createRoot(document.getElementById("root")).render(
-  <QueryClientProvider client={queryClient}>
-    <RecoilRoot>
-      <ChakraProvider>
-        <App />
-        <ToastContainer />
-      </ChakraProvider>
-    </RecoilRoot>
-  </QueryClientProvider>
-);
+document.addEventListener("DOMContentLoaded", (event) => {
+  if (!container) {
+    container = document.getElementById("root");
+    const root = createRoot(container);
+    root.render(
+      <QueryClientProvider client={queryClient}>
+        <RecoilRoot>
+          <ChakraProvider theme={theme}>
+            <App />
+            <ToastContainer />
+          </ChakraProvider>
+        </RecoilRoot>
+        <ReactQueryDevtools />
+      </QueryClientProvider>
+    );
+  }
+});
+// ReactDOM.createRoot(document.getElementById("root")).render(
+//   <QueryClientProvider client={queryClient}>
+//     <RecoilRoot>
+//       <ChakraProvider theme={theme}>
+//         <App />
+//         <ToastContainer />
+//       </ChakraProvider>
+//     </RecoilRoot>
+//     <ReactQueryDevtools />
+//   </QueryClientProvider>
+// );

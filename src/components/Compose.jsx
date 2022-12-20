@@ -26,12 +26,13 @@ const Compose = ({ category = "image" }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [chosenFiles, setChosenFiles] = useState([]);
   const [uploadingFiles, setUploadingFiles] = useState([]);
+  const controller = new AbortController();
   const { isLoading, isError, error, mutate } = useMutation(uploadFiles, {
     onSuccess: () => {
       queryClient.invalidateQueries("itemsQuantity");
-      queryClient.refetchQueries("itemsQuantity");
-      queryClient.invalidateQueries(`${category}Items`);
-      queryClient.refetchQueries(`${category}Items`);
+      // queryClient.refetchQueries("itemsQuantity");
+      queryClient.invalidateQueries([`items`, category]);
+      // queryClient.refetchQueries(`${category}Items`);
     },
   });
   const fileInputRef = useRef(null);
@@ -75,7 +76,8 @@ const Compose = ({ category = "image" }) => {
             onClose,
             fileName,
             `${fileName} is already in queue.`,
-            100
+            100,
+            controller
           ),
       });
     }
@@ -86,7 +88,7 @@ const Compose = ({ category = "image" }) => {
         duration: 3000,
         status: "loading",
         render: ({ id, onClose }) =>
-          toastConfig(id, onClose, fileName, `Uploading...`, 0),
+          toastConfig(id, onClose, fileName, `Uploading...`, 0, controller),
       });
       const formData = new FormData();
       formData.append("files", chosenFiles[0]);
@@ -99,6 +101,7 @@ const Compose = ({ category = "image" }) => {
           headers: {
             "Content-Type": "multipart/form-data",
           },
+          signal: controller.signal,
           onUploadProgress: (progressEvent) => {
             let pendingProgress = Math.round(
               (progressEvent.loaded / progressEvent.total) * 100
@@ -114,7 +117,8 @@ const Compose = ({ category = "image" }) => {
                     onClose,
                     fileName,
                     `Completed!!!`,
-                    pendingProgress
+                    pendingProgress,
+                    controller
                   ),
               });
               setUploadingFiles((files) =>
@@ -131,26 +135,21 @@ const Compose = ({ category = "image" }) => {
                     onClose,
                     fileName,
                     `Uploading...`,
-                    pendingProgress
+                    pendingProgress,
+                    controller
                   ),
               });
             }
           },
         });
       } catch (e) {
-        console.log(e.response.data.message, "Error: sdfsdafjklsj");
+        console.log(e?.message, "Error: sdfsdafjklsj");
         toast.update(fileName, {
           id: fileName,
           duration: 3000,
           status: "loading",
           render: ({ id, onClose }) =>
-            toastConfig(
-              id,
-              onClose,
-              fileName,
-              e?.response?.data?.message,
-              null
-            ),
+            toastConfig(id, onClose, fileName, e?.message, null),
         });
       }
     }

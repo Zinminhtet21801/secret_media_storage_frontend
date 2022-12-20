@@ -21,50 +21,17 @@ import LogoImage from "../assets/images/logo.png";
 import axios from "axios";
 import { useEffect } from "react";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
-import { loginState } from "../atoms/atoms";
+import { userState } from "../atoms/atoms";
 import { Link, useLocation } from "wouter";
-
+import { useAuth } from "../components/hooks/useAuth";
 const baseURL = import.meta.env.VITE_BASE_URL;
-
-// const NavLink = ({ children }) => (
-//   <Link
-//     // px={2}
-//     // py={1}
-//     // rounded={"md"}
-//     // _hover={{
-//     //   textDecoration: "none",
-//     //   bg: useColorModeValue("gray.200", "gray.700"),
-//     // }}
-//     href={"#"}
-//   >
-//     {children}
-//   </Link>
-// );
 
 export default function Nav() {
   const { colorMode, toggleColorMode } = useColorMode();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [user, setUser] = useRecoilState(loginState);
+  const [user, setUser] = useRecoilState(userState);
   const [location, setLocation] = useLocation();
-
-  const logout = async () => {
-    if (document.cookie) {
-      const res = await axios.get(`${baseURL}/user/logout`, {
-        withCredentials: true, // make sure to include this madafaka to clear the cookie
-        headers: {
-          Authorization: `Bearer ${document.cookie.split("=")[1]}`,
-        },
-      });
-      if (res.status === 200) {
-        setUser((oldUser) => ({
-          ...oldUser,
-          fullName: "",
-          email: "",
-        }));
-      }
-    }
-    setLocation("/");
-  };
+  const { signOut } = useAuth();
 
   const getProfile = async () => {
     if (document.cookie.split("=")[1]) {
@@ -156,7 +123,7 @@ export default function Nav() {
                     <MenuItem>Account Settings</MenuItem>
                     {/* </NavLink> */}
                     {/* <NavLink> */}
-                    <MenuItem onClick={logout}>Logout</MenuItem>
+                    <MenuItem onClick={signOut}>Logout</MenuItem>
                     {/* </NavLink> */}
                     {/* <MenuItem>Your Servers</MenuItem>
                   <MenuItem>Account Settings</MenuItem>

@@ -23,7 +23,7 @@ import PasswordForm from "../components/passwordForm";
 import { signUpSchema } from "../schemas/signUp.schema";
 import axios from "axios";
 import { useRecoilState } from "recoil";
-import { loginState } from "../atoms/atoms";
+import { userState } from "../atoms/atoms";
 import { Link, useLocation } from "wouter";
 import { toastConfig } from "../services/toastConfig";
 
@@ -31,7 +31,7 @@ const baseURL = import.meta.env.VITE_BASE_URL;
 let errorToastCount = 0;
 
 export default function SignUp() {
-  const [user, setUser] = useRecoilState(loginState);
+  const [user, setUser] = useRecoilState(userState);
   const [location, setLocation] = useLocation();
   const toast = useToast();
 

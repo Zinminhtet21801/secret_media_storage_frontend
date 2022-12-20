@@ -10,10 +10,9 @@ import {
 } from "@chakra-ui/react";
 
 function getProgress(progressValue) {
-  if(progressValue === null){
-    return <CloseIcon color={"white"} fontSize={"40px"} />
-  }
-  else if (progressValue === 100) {
+  if (progressValue === null) {
+    return <CloseIcon color={"white"} fontSize={"40px"} />;
+  } else if (progressValue === 100) {
     return <CheckCircleIcon color={"white"} fontSize={"40px"} />;
   } else {
     return (
@@ -26,7 +25,14 @@ function getProgress(progressValue) {
   }
 }
 
-export function toastConfig(id, onClose, title, description, progressValue) {
+export function toastConfig(
+  id,
+  onClose,
+  title,
+  description,
+  progressValue,
+  controller
+) {
   return (
     <Box position={"relative"} key={id}>
       <Flex
@@ -61,6 +67,19 @@ export function toastConfig(id, onClose, title, description, progressValue) {
           top={0}
           onClick={onClose}
         />
+        <Text
+          onClick={() => {
+            controller.abort();
+            alert("Upload cancelled");
+            onClose();
+          }}
+          style={{
+            cursor: "pointer",
+            marginTop: "auto",
+          }}
+        >
+          Cancel
+        </Text>
       </Flex>
     </Box>
   );
