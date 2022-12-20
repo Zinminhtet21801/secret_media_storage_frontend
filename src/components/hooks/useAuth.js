@@ -111,7 +111,7 @@ export const useAuth = () => {
           queryKey: ["itemsQuantity"],
         });
         if (res.status === 200) {
-
+          
           toast({
             title: "Logged out",
             status: "info",
