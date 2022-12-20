@@ -28,6 +28,10 @@ const theme = extendTheme({ breakpoints });
 
 export const baseURL = import.meta.env.VITE_BASE_URL;
 
+console.log('====================================');
+console.log(import.meta.env.VITE_BASE_URL, 'vite' process.env.VITE_BASE_URL);
+console.log('====================================');
+
 document.addEventListener("DOMContentLoaded", (event) => {
   if (!container) {
     container = document.getElementById("root");
