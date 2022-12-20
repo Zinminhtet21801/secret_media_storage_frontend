@@ -7,6 +7,7 @@ import {
   Flex,
   Menu,
   MenuItem,
+  useToast,
 } from "@chakra-ui/react";
 import Compose from "../components/Compose";
 import { categories } from "../assets/Categories";
@@ -24,8 +25,9 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import MenuComponent from "../components/MenuComponent";
 import AspectRatioImageContainer from "../components/AspectRatioImageContainer";
 import axios from "axios";
-import { loginState } from "../atoms/atoms";
+import { userState } from "../atoms/atoms";
 import { useRecoilState } from "recoil";
+import { toastConfig } from "../services/toastConfig";
 
 const itemsCount = {
   audio: 0,
@@ -33,6 +35,8 @@ const itemsCount = {
   video: 0,
   others: 0,
 };
+
+let count = 0;
 
 const itemRender = (current, type, element, category) => {
   /* Rendering the page number. */
@@ -64,34 +68,44 @@ const itemRender = (current, type, element, category) => {
 };
 
 const Home = () => {
-  const [location, setLocation] = useLocation();
-  const [category, setCategory] = useState();
-  const [user, setUser] = useRecoilState(loginState);
-  if (location === "/home" || location === "/home/") {
-    setLocation("/home/image/1");
-  }
+  /* Checking if the user is logged in or not. If the user is not logged in, it will return. */
 
-  const setCategoryHandler = (category) => {
-    setCategory(category);
-    setLocation(`/home/${category}/1`);
+  const [location, setLocation] = useLocation();
+  const [category, setCategory] = useState("image");
+  const toast = useToast();
+  const [user, setUser] = useRecoilState(userState);
+  const queryClient = useQueryClient();
+
+  if (!document?.cookie.split("=")[1]) return;
+
+  useEffect(() => {
+    if (location === "/home" || location === "/home/") {
+      setLocation("/home/image/1");
+    }
+  }, [location, category]);
+
+  const setCategoryHandler = (categoryArg) => {
+    setCategory(categoryArg);
+    setLocation(`/home/${categoryArg}/1`);
   };
 
   // const category = location.split("/")[2] ? location.split("/")[2] : undefined;
-  const pageNumber = location.split("/")[3] ? location.split("/")[3] : 1;
-  const { data: quantity } = useQuery("itemsQuantity", getQuantityCounts, {
-    // refetchInterval: 1000
-  });
+  const pageNumber = location.split("/")[3]
+    ? Number(location.split("/")[3])
+    : 1;
 
-  useEffect(() => {
-    setCategory(location.split("/")[2] ? location.split("/")[2] : undefined);
-  }, [location]);
+  console.log("getQuantityCounts 1");
+  const { data: quantity } = useQuery(["itemsQuantity"], getQuantityCounts, {
+    // refetchInterval: 1000
+    placeholderData: itemsCount,
+  });
 
   const {
     data: categoriesItems,
     isFetching,
     isLoading,
   } = useQuery(
-    [`${category}Items`, category, pageNumber],
+    [`items`, category, pageNumber],
     () => getCategoriesItems(category, pageNumber),
     {
       // refetchInterval: 1000
@@ -99,9 +113,17 @@ const Home = () => {
     }
   );
 
-  console.log("====================================");
-  console.log(categoriesItems, location.split("/")[2]);
-  console.log("====================================");
+  useEffect(() => {
+    setCategory(location.split("/")[2] ? location.split("/")[2] : undefined);
+  }, [location]);
+
+  useEffect(() => {
+    if (categoriesItems?.hasMore && category !== null) {
+      queryClient.prefetchQuery([`items`, category, pageNumber + 1], () =>
+        getCategoriesItems(category, pageNumber + 1)
+      );
+    }
+  }, [categoriesItems, category, pageNumber, quantity, queryClient]);
 
   return (
     <>
@@ -125,9 +147,15 @@ const Home = () => {
 
       <Flex m={2} minHeight={"70vh"} justifyContent={"center"}>
         {/* A grid that will show 1 column on mobile, 3 columns on tablet and 5 columns on desktop. */}
-        {!isFetching ? (
+        {!isLoading ? (
           categoriesItems?.data.length > 0 ? (
-            <SimpleGrid columns={[1, 2, 5]} spacing={10} m={2} my={10}>
+            <SimpleGrid
+              columns={[1, 1, 3, 3, 3, 5]}
+              spacing={10}
+              m={2}
+              my={10}
+              maxWidth={"100vw"}
+            >
               <ShowItems
                 items={categoriesItems?.data}
                 category={category}
@@ -145,8 +173,11 @@ const Home = () => {
       {/* Checking if the quantity is greater than 10, if it is, it will render the pagination component. */}
       {quantity && quantity[category] > 10 && (
         <Pagination
-          current={Number(pageNumber)}
+          current={pageNumber}
           total={quantity[category]}
+          onChange={(page) => {
+            setLocation(`/home/${category}/${page}`);
+          }}
           showTotal={(total, range) =>
             `${range[0]} - ${range[1]} of ${total} items`
           }
@@ -161,6 +192,7 @@ const Home = () => {
 
 const ItemNameAndIconContainer = ({ name, id, category }) => {
   const queryClient = useQueryClient();
+  const toast = useToast();
   const removeMedia = async () => {
     const res = await axios.delete(`${baseURL}/media/remove/${id}`, {
       headers: {
@@ -171,44 +203,73 @@ const ItemNameAndIconContainer = ({ name, id, category }) => {
   };
 
   const downloadMedia = async () => {
-    const res = await axios
-      .get(`${baseURL}/media/download/${category}/${id}`, {
-        headers: {
-          Authorization: `Bearer ${document.cookie.split("=")[1]}`,
-        },
-        responseType: "blob",
-      })
-      .then((res) => {
-        const link = document.createElement("a");
-        const url = window.URL.createObjectURL(
-          new Blob([res.data], {
-            type: res.headers["content-type"],
-          })
-        );
-
-        link.href = url;
-        link.setAttribute("download", name);
-        document.body.appendChild(link);
-        link.click();
+    if (toast.isActive(name)) {
+      count++;
+      return toast({
+        id: name + count,
+        duration: 3000,
+        render: ({ id, onClose }) =>
+          toastConfig(id, onClose, name, `${name} is already in queue.`, 100),
       });
+    }
 
-    // const link = document.createElement("a");
-    // const url = baseURL + "/" + res.data.path
-    // link.href = url;
-    // link.setAttribute("download", name);
-    // document.body.appendChild(link);
-    // link.click();
+    toast({
+      id: name,
+      duration: 3000,
+      status: "loading",
+      render: ({ id, onClose }) =>
+        toastConfig(id, onClose, name, `Downloading...`, 0),
+    });
+    const link = document.createElement("a");
+    const res = await axios.get(`${baseURL}/media/download/${category}/${id}`, {
+      headers: {
+        Authorization: `Bearer ${document.cookie.split("=")[1]}`,
+      },
+      responseType: "blob",
+      onDownloadProgress: (progressEvent) => {
+        let pendingProgress = Math.round(
+          (progressEvent.loaded / progressEvent.total) * 100
+        );
+        if (pendingProgress === 100) {
+          toast.update(name, {
+            id: name,
+            duration: 3000,
+            status: "loading",
+            render: ({ id, onClose }) =>
+              toastConfig(id, onClose, name, `Completed!!!`, pendingProgress),
+          });
+        } else {
+          toast.update(name, {
+            id: name,
+            duration: null,
+            status: "loading",
+            render: ({ id, onClose }) =>
+              toastConfig(id, onClose, name, `Downloading...`, pendingProgress),
+          });
+        }
+      },
+    });
 
-    // saveAs(baseURL + "/" + res.data.path, name,);
+    const url = window.URL.createObjectURL(
+      new Blob([res.data], {
+        type: res.headers["content-type"],
+      })
+    );
+
+    link.href = url;
+    link.setAttribute("download", name);
+    document.body.appendChild(link);
+    link.click();
+    window.URL.revokeObjectURL(url);
 
     return res;
   };
   const { data, mutate: mutateRemoveMedia } = useMutation(removeMedia, {
     onSuccess: () => {
       queryClient.invalidateQueries("itemsQuantity");
-      queryClient.refetchQueries("itemsQuantity");
-      queryClient.invalidateQueries(`${category}Items`);
-      queryClient.refetchQueries(`${category}Items`);
+      // queryClient.refetchQueries("itemsQuantity");
+      queryClient.invalidateQueries(["items", category]);
+      // queryClient.refetchQueries(`${category}Items`);
     },
 
     onError: (err) => {
@@ -219,9 +280,9 @@ const ItemNameAndIconContainer = ({ name, id, category }) => {
   const { mutate: mutateDownloadMedia } = useMutation(downloadMedia, {
     onSuccess: () => {
       queryClient.invalidateQueries("itemsQuantity");
-      queryClient.refetchQueries("itemsQuantity");
-      queryClient.invalidateQueries(`${category}Items`);
-      queryClient.refetchQueries(`${category}Items`);
+      // queryClient.refetchQueries("itemsQuantity");
+      queryClient.invalidateQueries(["items", category]);
+      // queryClient.refetchQueries(`${category}Items`);
     },
     onError: (err) => {
       console.log(err);
@@ -295,7 +356,6 @@ const ShowItems = ({ items, category, mail }) => {
               id={id}
               key={id}
               height={"fit-content"}
-              width={[300, 300, 300]}
               bgColor={"gray.500"}
             >
               {type === "image" && (
