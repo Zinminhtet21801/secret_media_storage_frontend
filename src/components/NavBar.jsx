@@ -34,28 +34,46 @@ export default function Nav() {
   const { signOut } = useAuth();
 
   const getProfile = async () => {
-    if (document.cookie.split("=")[1]) {
-      const res = await axios.get(`${baseURL}/user/profile`, {
-        headers: {
-          Authorization: `Bearer ${document.cookie.split("=")[1]}`,
-        },
-      });
-      if (res.status === 200) {
-        setUser((oldUser) => ({
-          ...oldUser,
-          fullName: res.data.fullName,
-          email: res.data.email,
-        }));
-        if (location === "/") {
-          return setLocation("/home");
-        }
+    // console.log(res, 'res')
+    // if (document.cookie.split("=")[1]) {
+    //   const res = await axios.get(`${baseURL}/user/profile`, {
+    //     headers: {
+    //       Authorization: `Bearer ${document.cookie.split("=")[1]}`,
+    //     },
+    //   });
+    //   if (res.status === 200) {
+    //     setUser((oldUser) => ({
+    //       ...oldUser,
+    //       fullName: res.data.fullName,
+    //       email: res.data.email,
+    //     }));
+    //     if (location === "/") {
+    //       return setLocation("/home");
+    //     }
+    //   }
+    // } else {
+    //   setUser({
+    //     fullName: "",
+    //     email: "",
+    //   });
+    //   setLocation("/");
+    // }
+
+    const res = await axios.get(`${baseURL}/user/profile`, {
+      headers: {
+        Authorization: `Bearer ${document.cookie.split("=")[1]}`,
+      },
+    });
+    console.log(res, "res");
+    if (res.status === 200) {
+      setUser((oldUser) => ({
+        ...oldUser,
+        fullName: res.data.fullName,
+        email: res.data.email,
+      }));
+      if (location === "/") {
+        return setLocation("/home");
       }
-    } else {
-      setUser({
-        fullName: "",
-        email: "",
-      });
-      setLocation("/");
     }
   };
 
