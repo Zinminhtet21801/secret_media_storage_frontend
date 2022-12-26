@@ -8,9 +8,10 @@ export const getCategoriesItems = async (url = "image", page = 1) => {
     const { data } = await axios.get(
       baseURL + `/media/getCategories/${url}/page/${page}`,
       {
-        headers: {
-          Authorization: `Bearer ${document.cookie.split("=")[1]}`,
-        },
+        // headers: {
+        //   Authorization: `Bearer ${document.cookie.split("=")[1]}`,
+        // },
+        withCredentials: true,
       }
     );
     return {
