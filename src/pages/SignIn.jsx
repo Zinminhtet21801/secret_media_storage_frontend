@@ -1,37 +1,28 @@
 import {
   Flex,
   Box,
-  FormControl,
-  FormLabel,
-  Input,
   Checkbox,
   Stack,
-  // Link,
   Button,
   Heading,
   Text,
   useColorModeValue,
   useToast,
 } from "@chakra-ui/react";
-import axios from "axios";
 import { useFormik } from "formik";
-import { useRecoilState } from "recoil";
 import { Link, useLocation } from "wouter";
-import { userState } from "../atoms/atoms";
 import InputWithLabel from "../components/InputWithLabel";
 import PasswordForm from "../components/passwordForm";
 import { signInSchema } from "../schemas/signIn.schema";
 import { toastConfig } from "../services/toastConfig";
 import { useAuth } from "../components/hooks/useAuth";
 
-const baseURL = import.meta.env.VITE_BASE_URL;
 let errorToastCount = 0;
 
 export default function SignIn() {
-  const [user, setUser] = useRecoilState(userState);
-  const [location, setLocation] = useLocation();
   const toast = useToast();
   const { signIn } = useAuth();
+
   const onSubmit = async (values, actions) => {
     try {
       await signIn(actions, values);

@@ -6,12 +6,16 @@ import { useCustomToast } from "./useCustomToast";
 import { toastConfig } from "../../services/toastConfig";
 import { useQuery, useQueryClient } from "react-query";
 import axios from "axios";
-
+import {
+  setStoredUser,
+  getStoredUser,
+  removeStoredUser,
+} from "../../user-storage";
 let errorToastCount = 0;
 
 async function getUserFromServer(user) {
   const source = axios.CancelToken.source();
-  if (!user) return null;
+  if (getStoredUser() === null) return user;
   const axiosResponse = await AxiosInstance.get("/user/profile", {
     cancelToken: source.token,
   });
@@ -30,13 +34,20 @@ export const useUser = () => {
   const queryClient = useQueryClient();
 
   useQuery("user", () => getUserFromServer(user), {
-    enabled: !!user.email,
+    // enabled: !!user?.email && location !== "/",
+    // enabled: location.includes("home"),
+    placeholderData: user,
     onSuccess: (axiosResponse) => {
       const { email, fullName } = axiosResponse;
+      email && queryClient.invalidateQueries("itemsQuantity");
+      email && queryClient.invalidateQueries([`items`]);
       setUser({
         fullName,
         email,
       });
+    },
+    onError: (error) => {
+      console.log(error);
     },
   });
 
@@ -59,6 +70,7 @@ export const useUser = () => {
         setUser({
           fullName: "",
           email: "",
+          refreshToken: "",
         });
         setLocation("/");
       }
@@ -79,11 +91,17 @@ export const useUser = () => {
   };
 
   function updateUser(newUser) {
-    setUser(newUser);
-    queryClient.setQueryData("user", newUser);
+    const user = {
+      fullName: newUser.fullName,
+      email: newUser.email,
+    };
+    setUser(user);
+    setStoredUser(user);
+    queryClient.setQueryData("user", user);
   }
 
   function clearUser() {
+    removeStoredUser();
     setUser({
       fullName: "",
       email: "",

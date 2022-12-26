@@ -10,21 +10,16 @@ import {
 } from "@chakra-ui/react";
 import { useFormik } from "formik";
 import { forgotPasswordSchema } from "../schemas/forgotPassword.schema";
-
-
-const baseURL = import.meta.env.VITE_BASE_URL
+import { AxiosInstance } from "../axios/axiosInstance";
 
 const onSubmit = async (values, actions) => {
-  const res = await fetch(
-    `${baseURL}/user/send-reset-password-email`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(values),
-    }
-  );
+  const res = await AxiosInstance({
+    url: "/user/send-reset-password-email",
+    method: "POST",
+    data: {
+      ...values,
+    },
+  });
   res.status === 201 && actions.resetForm();
 };
 
@@ -44,6 +39,7 @@ export default function ForgotPasswordForm() {
     validationSchema: forgotPasswordSchema,
     onSubmit,
   });
+
   return (
     <form onSubmit={handleSubmit} autoComplete="off">
       <Flex

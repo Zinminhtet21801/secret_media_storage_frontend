@@ -25,8 +25,10 @@ import { useFormik } from "formik";
 import { contactUsSchema } from "../schemas/contactUs.schema";
 import axios from "axios";
 import { useLocation } from "wouter";
+import { useEffect } from "react";
+import { useUser } from "../components/hooks/useUser";
 
-const baseURL = import.meta.env.VITE_BASE_URL
+const baseURL = import.meta.env.VITE_BASE_URL;
 
 const LeftContact = () => {
   const component = companyDetail.map((item, index) => (
@@ -48,7 +50,9 @@ const LeftContact = () => {
 
 export default function ContactUs() {
   const toast = useToast();
+  const { user } = useUser();
   const [location, setLocation] = useLocation();
+
   const onSubmit = async (values, actions) => {
     try {
       const res = await axios.post(

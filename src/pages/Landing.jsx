@@ -12,6 +12,7 @@ import { Link } from "wouter";
 import { HomePageSVG } from "../assets/svgs/homepage";
 
 export default function Landing() {
+
   return (
     <Container maxW={"5xl"}>
       <Stack

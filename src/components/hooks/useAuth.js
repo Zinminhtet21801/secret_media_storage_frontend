@@ -15,7 +15,7 @@ export const useAuth = () => {
   const toast = useCustomToast();
   const queryClient = useQueryClient();
   const SERVER_ERROR = "There was an error contacting the server.";
-  const { updateUser } = useUser();
+  const { updateUser, clearUser } = useUser();
   const authServerCall = async (urlEndpoint, formActions, restCredential) => {
     try {
       const { data, status } = await AxiosInstance({
@@ -104,23 +104,21 @@ export const useAuth = () => {
       });
 
       queryClient.removeQueries({
-        queryKey: ["user"],
+        queryKey: "user",
       });
 
       queryClient.removeQueries({
         queryKey: ["items"],
       });
 
+      queryClient.removeQueries("itemsQuantity");
+
       if (res.status === 200) {
         toast({
           title: "Logged out",
           status: "info",
         });
-        setUser((oldData) => ({
-          ...oldData,
-          fullName: "",
-          email: "",
-        }));
+        clearUser();
       }
     } catch (e) {
       console.log(e);

@@ -1,64 +1,30 @@
 import {
   Flex,
   Box,
-  FormControl,
-  FormLabel,
-  Input,
-  InputGroup,
-  HStack,
-  InputRightElement,
   Stack,
   Button,
   Heading,
   Text,
   useColorModeValue,
   useToast,
-  // Link,
 } from "@chakra-ui/react";
-import { useState } from "react";
-import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 import InputWithLabel from "../components/InputWithLabel";
 import { useFormik } from "formik";
 import PasswordForm from "../components/passwordForm";
 import { signUpSchema } from "../schemas/signUp.schema";
-import axios from "axios";
-import { useRecoilState } from "recoil";
-import { userState } from "../atoms/atoms";
 import { Link, useLocation } from "wouter";
 import { toastConfig } from "../services/toastConfig";
 import { useAuth } from "../components/hooks/useAuth";
 
-const baseURL = import.meta.env.VITE_BASE_URL;
 let errorToastCount = 0;
 
 export default function SignUp() {
-  const [user, setUser] = useRecoilState(userState);
-  const [location, setLocation] = useLocation();
   const toast = useToast();
   const { signUp } = useAuth();
 
   const onSubmit = async (values, actions) => {
     try {
       await signUp(actions, values);
-      // const res = await axios.post(
-      //   `${baseURL}/user/create`,
-      //   JSON.stringify(values),
-      //   {
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //     withCredentials: true,
-      //   }
-      // );
-      // if (res.status === 200) {
-      //   actions.resetForm();
-      //   setUser((oldUser) => ({
-      //     ...oldUser,
-      //     fullName: res.data.fullName,
-      //     email: res.data.email,
-      //   }));
-      //   setLocation("/home");
-      // }
     } catch (e) {
       const { error, message, statusCode } = e.response.data;
       ++errorToastCount;

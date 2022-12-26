@@ -17,14 +17,26 @@ import {
 } from "@chakra-ui/react";
 import { MoonIcon, SunIcon } from "@chakra-ui/icons";
 import LogoImage from "../assets/images/logo.png";
-import {  useLocation } from "wouter";
 import { useAuth } from "../components/hooks/useAuth";
 import { useUser } from "../components/hooks/useUser";
+import { useLocation } from "wouter";
+import { useEffect } from "react";
+import { getStoredUser } from "../user-storage";
 
 export default function Nav() {
   const { colorMode, toggleColorMode } = useColorMode();
   const { user } = useUser();
+  const [location, setLocation] = useLocation();
   const { signOut } = useAuth();
+
+  useEffect(() => {
+    if (getStoredUser()?.email) {
+      const storedUserEmail = getStoredUser()?.email;
+      if (storedUserEmail && location.includes("home")) return;
+      if (storedUserEmail && !location.includes("home"))
+        setLocation("/home/image/1");
+    } else if (location.includes("home") ) setLocation("/");
+  }, [location, user?.email]);
 
   return (
     <>

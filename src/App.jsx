@@ -1,7 +1,7 @@
 import "./App.css";
 import Nav from "./components/NavBar";
 import Footer from "./components/Footer";
-import { Route, Switch } from "wouter";
+import { Route, Switch, useLocation } from "wouter";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import ForgotPasswordForm from "./pages/ForgotPassword";
@@ -9,13 +9,14 @@ import Landing from "./pages/Landing";
 import Home from "./pages/Home";
 import ContactUs from "./pages/ContactUs";
 import { Box } from "@chakra-ui/react";
+import { useUser } from "./components/hooks/useUser";
 
 function App() {
   return (
     <div className="App">
       <Nav />
       <Box minH={"86.5vh"}>
-        <Switch >
+        <Switch>
           <Route path="/" component={Landing} />
           <Route path="/home/:rest*" component={Home} />
 

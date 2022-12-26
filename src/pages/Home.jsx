@@ -28,6 +28,7 @@ import axios from "axios";
 import { userState } from "../atoms/atoms";
 import { useRecoilState } from "recoil";
 import { toastConfig } from "../services/toastConfig";
+import { getStoredUser } from "../user-storage";
 
 const itemsCount = {
   audio: 0,
@@ -69,14 +70,15 @@ const itemRender = (current, type, element, category) => {
 
 const Home = () => {
   /* Checking if the user is logged in or not. If the user is not logged in, it will return. */
-  
+
   // if (!cookies.get("user")) return;
 
   // if(!document?.cookie.split("=")[1]) return;
 
+  if (!getStoredUser()) return;
+
   const [location, setLocation] = useLocation();
   const [category, setCategory] = useState("image");
-  const toast = useToast();
   const [user, setUser] = useRecoilState(userState);
   const queryClient = useQueryClient();
 
@@ -98,7 +100,8 @@ const Home = () => {
     ? Number(location.split("/")[3])
     : 1;
 
-  const { data: quantity } = useQuery(["itemsQuantity"], getQuantityCounts, {
+  const { data: quantity } = useQuery("itemsQuantity", getQuantityCounts, {
+    // enabled: !!user?.email,
     // refetchInterval: 1000
     placeholderData: itemsCount,
   });
@@ -111,6 +114,7 @@ const Home = () => {
     [`items`, category, pageNumber],
     () => getCategoriesItems(category, pageNumber),
     {
+      // enabled: !!user?.email,
       // refetchInterval: 1000
       // keepPreviousData: true,
     }
@@ -136,6 +140,7 @@ const Home = () => {
         overflowX={["scroll", "scroll", "hidden", "hidden"]}
         scrollBehavior={"smooth"}
         m={2}
+        p={1}
       >
         <Compose category={category} />
 
