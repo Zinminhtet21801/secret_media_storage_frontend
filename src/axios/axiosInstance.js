@@ -9,7 +9,7 @@ export function getJWTHeader(user) {
 export const AxiosInstance = axios.create({
   baseURL: baseURL,
   withCredentials: true,
-  headers: {
-    Authorization: `Bearer ${document.cookie.split("=")[1]}`,
-  },
+  // headers: {
+  //   Authorization: `Bearer ${document.cookie.split("=")[1]}`,
+  // },
 });
