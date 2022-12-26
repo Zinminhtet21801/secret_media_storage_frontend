@@ -1,4 +1,3 @@
-import { useQuery } from "react-query";
 import { AxiosInstance } from "../../axios/axiosInstance.js";
 import { useCustomToast } from "./useCustomToast.js";
 import { useRecoilState } from "recoil";
@@ -6,6 +5,7 @@ import { userState } from "../../atoms/atoms.js";
 import { useLocation } from "wouter";
 import { toastConfig } from "../../services/toastConfig.jsx";
 import { useQueryClient } from "react-query";
+import { useUser } from "./useUser.js";
 
 let errorToastCount = 0;
 
@@ -15,7 +15,7 @@ export const useAuth = () => {
   const toast = useCustomToast();
   const queryClient = useQueryClient();
   const SERVER_ERROR = "There was an error contacting the server.";
-
+  const { updateUser } = useUser();
   const authServerCall = async (urlEndpoint, formActions, restCredential) => {
     try {
       const { data, status } = await AxiosInstance({
@@ -33,6 +33,7 @@ export const useAuth = () => {
           fullName: data.fullName,
           email: data.email,
         }));
+        updateUser(data);
         setLocation("/home");
       }
 
@@ -93,39 +94,38 @@ export const useAuth = () => {
    * It clears the user from cookies and then displays a toast message
    */
   const signOut = async () => {
-    if (document.cookie) {
-      try {
-        const res = await AxiosInstance({
-          url: "/user/logout",
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${document.cookie.split("=")[1]}`,
-          },
-        });
+    try {
+      const res = await AxiosInstance({
+        url: "/user/logout",
+        method: "GET",
+        // headers: {
+        //   Authorization: `Bearer ${document.cookie.split("=")[1]}`,
+        // },
+      });
 
-        queryClient.removeQueries({
-          queryKey: ["items"],
-        });
+      queryClient.removeQueries({
+        queryKey: ["user"],
+      });
 
-        queryClient.removeQueries({
-          queryKey: ["itemsQuantity"],
+      queryClient.removeQueries({
+        queryKey: ["items"],
+      });
+
+      if (res.status === 200) {
+        toast({
+          title: "Logged out",
+          status: "info",
         });
-        if (res.status === 200) {
-          
-          toast({
-            title: "Logged out",
-            status: "info",
-          });
-          setUser((oldData) => ({
-            ...oldData,
-            fullName: "",
-            email: "",
-          }));
-        }
-      } catch (e) {
-        console.log(e);
+        setUser((oldData) => ({
+          ...oldData,
+          fullName: "",
+          email: "",
+        }));
       }
+    } catch (e) {
+      console.log(e);
     }
+
     setLocation("/");
   };
 
