@@ -46,7 +46,6 @@ export const useUser = () => {
         url: urlEndpoint,
         method: method,
       });
-      console.log(res);
       if (res.status === 200) {
         setUser((prevData) => ({
           ...prevData,
@@ -80,14 +79,11 @@ export const useUser = () => {
   };
 
   function updateUser(newUser) {
-    console.log(newUser);
     setUser(newUser);
-    // setStoredUser(newUser);
     queryClient.setQueryData("user", newUser);
   }
 
   function clearUser() {
-    // removeStoredUser();
     setUser({
       fullName: "",
       email: "",
