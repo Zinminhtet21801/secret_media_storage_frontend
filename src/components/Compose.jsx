@@ -31,7 +31,7 @@ const Compose = ({ category = "image" }) => {
     onSuccess: () => {
       queryClient.invalidateQueries("itemsQuantity");
       // queryClient.refetchQueries("itemsQuantity");
-      queryClient.invalidateQueries([`items`, category]);
+      queryClient.invalidateQueries([`items`, category, 1]);
       // queryClient.refetchQueries(`${category}Items`);
     },
   });
