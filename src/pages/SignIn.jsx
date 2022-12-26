@@ -35,27 +35,6 @@ export default function SignIn() {
   const onSubmit = async (values, actions) => {
     try {
       await signIn(actions, values);
-      // const res = await axios.post(
-      //   `${baseURL}/user/login`,
-      //   JSON.stringify(values),
-      //   {
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //       Authorization: `Bearer ${document.cookie.split("=")[1]}`,
-      //     },
-      //     withCredentials: true,
-      //   }
-      // );
-      // console.log(res.response);
-      // if (res.status === 200) {
-      //   actions.resetForm();
-      //   setUser((oldUser) => ({
-      //     ...oldUser,
-      //     fullName: res.data.fullName,
-      //     email: res.data.email,
-      //   }));
-      //   setLocation("/home");
-      // }
     } catch (e) {
       const { error, message, statusCode } = e.response.data;
       ++errorToastCount;
