@@ -57,7 +57,7 @@ export default function ContactUs() {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${document.cookie.split("=")[1]}`,
+            // Authorization: `Bearer ${document.cookie.split("=")[1]}`,
           },
           withCredentials: true,
         }
@@ -83,16 +83,6 @@ export default function ContactUs() {
         position: "bottom-left",
       });
     }
-    // if (res.status === 200) {
-    //   actions.resetForm();
-    //   console.log(res.data.fullName, res.data);
-    //   setUser((oldUser) => ({
-    //     ...oldUser,
-    //     fullName: res.data.fullName,
-    //     email: res.data.email,
-    //   }));
-    //   setLocation("/");
-    // }
   };
 
   const {
