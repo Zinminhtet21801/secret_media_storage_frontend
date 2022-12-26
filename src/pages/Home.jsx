@@ -69,6 +69,10 @@ const itemRender = (current, type, element, category) => {
 
 const Home = () => {
   /* Checking if the user is logged in or not. If the user is not logged in, it will return. */
+  
+  // if (!cookies.get("user")) return;
+
+  // if(!document?.cookie.split("=")[1]) return;
 
   const [location, setLocation] = useLocation();
   const [category, setCategory] = useState("image");
@@ -76,7 +80,7 @@ const Home = () => {
   const [user, setUser] = useRecoilState(userState);
   const queryClient = useQueryClient();
 
-  if (!document?.cookie.split("=")[1]) return;
+  // if (!document?.cookie.split("=")[1]) return;
 
   useEffect(() => {
     if (location === "/home" || location === "/home/") {
@@ -94,7 +98,6 @@ const Home = () => {
     ? Number(location.split("/")[3])
     : 1;
 
-  console.log("getQuantityCounts 1");
   const { data: quantity } = useQuery(["itemsQuantity"], getQuantityCounts, {
     // refetchInterval: 1000
     placeholderData: itemsCount,
@@ -195,9 +198,10 @@ const ItemNameAndIconContainer = ({ name, id, category }) => {
   const toast = useToast();
   const removeMedia = async () => {
     const res = await axios.delete(`${baseURL}/media/remove/${id}`, {
-      headers: {
-        Authorization: `Bearer ${document.cookie.split("=")[1]}`,
-      },
+      // headers: {
+      //   Authorization: `Bearer ${document.cookie.split("=")[1]}`,
+      // },
+      withCredentials: true,
     });
     return res;
   };
@@ -222,9 +226,10 @@ const ItemNameAndIconContainer = ({ name, id, category }) => {
     });
     const link = document.createElement("a");
     const res = await axios.get(`${baseURL}/media/download/${category}/${id}`, {
-      headers: {
-        Authorization: `Bearer ${document.cookie.split("=")[1]}`,
-      },
+      // headers: {
+      //   Authorization: `Bearer ${document.cookie.split("=")[1]}`,
+      // },
+      withCredentials: true,
       responseType: "blob",
       onDownloadProgress: (progressEvent) => {
         let pendingProgress = Math.round(
