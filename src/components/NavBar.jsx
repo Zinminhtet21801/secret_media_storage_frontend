@@ -2,7 +2,6 @@ import {
   Box,
   Flex,
   Avatar,
-  // Link,
   Button,
   Menu,
   MenuButton,
@@ -18,68 +17,14 @@ import {
 } from "@chakra-ui/react";
 import { MoonIcon, SunIcon } from "@chakra-ui/icons";
 import LogoImage from "../assets/images/logo.png";
-import axios from "axios";
-import { useEffect } from "react";
-import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
-import { userState } from "../atoms/atoms";
-import { Link, useLocation } from "wouter";
+import {  useLocation } from "wouter";
 import { useAuth } from "../components/hooks/useAuth";
-const baseURL = import.meta.env.VITE_BASE_URL;
+import { useUser } from "../components/hooks/useUser";
 
 export default function Nav() {
   const { colorMode, toggleColorMode } = useColorMode();
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [user, setUser] = useRecoilState(userState);
-  const [location, setLocation] = useLocation();
+  const { user } = useUser();
   const { signOut } = useAuth();
-
-  const getProfile = async () => {
-    // console.log(res, 'res')
-    // if (document.cookie.split("=")[1]) {
-    //   const res = await axios.get(`${baseURL}/user/profile`, {
-    //     headers: {
-    //       Authorization: `Bearer ${document.cookie.split("=")[1]}`,
-    //     },
-    //   });
-    //   if (res.status === 200) {
-    //     setUser((oldUser) => ({
-    //       ...oldUser,
-    //       fullName: res.data.fullName,
-    //       email: res.data.email,
-    //     }));
-    //     if (location === "/") {
-    //       return setLocation("/home");
-    //     }
-    //   }
-    // } else {
-    //   setUser({
-    //     fullName: "",
-    //     email: "",
-    //   });
-    //   setLocation("/");
-    // }
-
-    const res = await axios.get(`${baseURL}/user/profile`, {
-      headers: {
-        Authorization: `Bearer ${document.cookie.split("=")[1]}`,
-      },
-    });
-    console.log(res, "res");
-    if (res.status === 200) {
-      setUser((oldUser) => ({
-        ...oldUser,
-        fullName: res.data.fullName,
-        email: res.data.email,
-      }));
-      if (location === "/") {
-        return setLocation("/home");
-      }
-    }
-  };
-
-  useEffect(() => {
-    getProfile();
-  }, [user.email]);
 
   return (
     <>
@@ -94,7 +39,7 @@ export default function Nav() {
                 cursor: "pointer",
               }}
               // onClick={() => setLocation("/")}
-              onClick={getProfile}
+              // onClick={getProfile}
             />
           </Box>
 
