@@ -31,7 +31,8 @@ export function toastConfig(
   title,
   description,
   progressValue,
-  controller
+  controller,
+  cancelBtnVisibility = "hidden"
 ) {
   return (
     <Box position={"relative"} key={id}>
@@ -68,6 +69,7 @@ export function toastConfig(
           onClick={onClose}
         />
         <Text
+          visibility={cancelBtnVisibility}
           onClick={() => {
             controller.abort();
             alert("Upload cancelled");
