@@ -31,8 +31,7 @@ const Compose = ({ category = "image" }) => {
     onSuccess: () => {
       queryClient.invalidateQueries("itemsQuantity");
       // queryClient.refetchQueries("itemsQuantity");
-      queryClient.invalidateQueries([`items`, category, 1]);
-      // queryClient.refetchQueries(`${category}Items`);
+      queryClient.invalidateQueries([`items`]);
     },
   });
   const fileInputRef = useRef(null);
@@ -143,13 +142,20 @@ const Compose = ({ category = "image" }) => {
           },
         });
       } catch (e) {
-        console.log(e?.message, "Error: sdfsdafjklsj");
         toast.update(fileName, {
           id: fileName,
           duration: 3000,
           status: "loading",
           render: ({ id, onClose }) =>
-            toastConfig(id, onClose, fileName, e?.message, null),
+            toastConfig(
+              id,
+              onClose,
+              fileName,
+              e?.response?.data?.message,
+              null,
+              controller,
+              "hidden"
+            ),
         });
       }
     }
