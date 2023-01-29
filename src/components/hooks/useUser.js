@@ -47,7 +47,12 @@ export const useUser = () => {
       });
     },
     onError: (error) => {
-      console.log(error);
+      setUser({
+        email: "",
+        fullName: "",
+      });
+      removeStoredUser();
+      return;
     },
   });
 
