@@ -11,6 +11,7 @@ import App from "./App";
 import "./index.css";
 import { queryClient } from "./react-query/queryClient";
 import { ReactQueryDevtools } from "react-query/devtools";
+import RecoilNexus from "recoil-nexus";
 
 let container = null;
 
@@ -27,6 +28,7 @@ const { ToastContainer } = createStandaloneToast();
 const theme = extendTheme({ breakpoints });
 
 export const baseURL = import.meta.env.VITE_BASE_URL;
+export const s3ObjURL = import.meta.env.VITE_S3_OBJECT_URL;
 
 document.addEventListener("DOMContentLoaded", (event) => {
   if (!container) {
@@ -35,6 +37,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
     root.render(
       <QueryClientProvider client={queryClient}>
         <RecoilRoot>
+          <RecoilNexus />
           <ChakraProvider theme={theme}>
             <App />
             <ToastContainer />
