@@ -50,7 +50,7 @@ export default function Nav() {
               _hover={{
                 cursor: "pointer",
               }}
-              // onClick={() => setLocation("/")}
+              onClick={() => setLocation("/")}
               // onClick={getProfile}
             />
           </Box>
