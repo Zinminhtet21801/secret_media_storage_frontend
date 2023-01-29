@@ -26,13 +26,17 @@ export const useAuth = () => {
         },
       });
 
-      if (status === 200) {
+      if (status === 201 || status === 200) {
         formActions.resetForm();
         setUser((prevData) => ({
           ...prevData,
           fullName: data.fullName,
           email: data.email,
         }));
+        queryClient.setQueryData("user", {
+          email: data.email,
+          fulName: data.fullName,
+        });
         updateUser(data);
         setLocation("/home");
       }
@@ -55,7 +59,7 @@ export const useAuth = () => {
       //   status: "error",
       // });
 
-      const { error, message, statusCode } = e.response.data;
+      const { error, message, statusCode } = e?.response?.data;
       ++errorToastCount;
       const errorId = `SignInError${message}${errorToastCount}`;
       console.log(errorId);
