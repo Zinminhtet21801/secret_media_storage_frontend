@@ -13,11 +13,9 @@ import { IoMdAddCircle } from "react-icons/io";
 import { motion } from "framer-motion";
 import ModalComponent from "./ModalComponent";
 import { AttachmentIcon, DeleteIcon } from "@chakra-ui/icons";
-import axios from "axios";
 import { toastConfig } from "../services/toastConfig";
 import { useMutation, useQueryClient } from "react-query";
-
-const baseURL = import.meta.env.VITE_BASE_URL;
+import { Uploader } from "../utils/upload";
 let count = 0;
 
 const Compose = ({ category = "image" }) => {
@@ -26,24 +24,20 @@ const Compose = ({ category = "image" }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [chosenFiles, setChosenFiles] = useState([]);
   const [uploadingFiles, setUploadingFiles] = useState([]);
-  const controller = new AbortController();
-  const { isLoading, isError, error, mutate } = useMutation(uploadFiles, {
-    onSuccess: () => {
-      queryClient.invalidateQueries("itemsQuantity");
-      // queryClient.refetchQueries("itemsQuantity");
-      queryClient.invalidateQueries([`items`]);
-    },
-  });
+  const [uploader, setUploader] = useState(undefined);
+
+  const { isLoading, isError, error, mutate } = useMutation(uploadFiles);
   const fileInputRef = useRef(null);
 
   function closeModal() {
     setIsModalOpen(false);
   }
 
+  const handleRemoveFile = (fileName) => [
+    setUploadingFiles((files) => files.filter((file) => file !== fileName)),
+  ];
+
   const handleAddFile = (e) => {
-    // const newFile = e.target.files[0];
-    // setChosenFiles((old) => [...old, newFile]);
-    console.log("HERERE", e);
     const newFile = e.target.files[0];
     newFile && setChosenFiles([newFile]);
   };
@@ -76,36 +70,33 @@ const Compose = ({ category = "image" }) => {
             fileName,
             `${fileName} is already in queue.`,
             100,
-            controller
+            uploader
           ),
       });
     }
     if (chosenFiles.length > 0) {
-      setUploadingFiles((files) => [fileName, ...files]);
+      let percentage = undefined;
       toast({
         id: fileName,
         duration: 3000,
         status: "loading",
         render: ({ id, onClose }) =>
-          toastConfig(id, onClose, fileName, `Uploading...`, 0, controller),
+          toastConfig(id, onClose, fileName, `Uploading...`, 0, uploader),
       });
-      const formData = new FormData();
-      formData.append("files", chosenFiles[0]);
-      try {
-        const res = await axios({
-          method: "post",
-          url: `${baseURL}/media/uploadFiles`,
-          data: formData,
-          withCredentials: true,
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          signal: controller.signal,
-          onUploadProgress: (progressEvent) => {
-            let pendingProgress = Math.round(
-              (progressEvent.loaded / progressEvent.total) * 100
-            );
-            if (pendingProgress === 100) {
+      const uploader = new Uploader({
+        fileName,
+        file: chosenFiles[0],
+        queryClient: queryClient,
+        category: category,
+      });
+      setUploader(uploader);
+
+      uploader
+        .onProgress(async ({ percentage: newPercentage }) => {
+          // to avoid the same percentage to be logged twice
+          if (newPercentage !== percentage) {
+            percentage = newPercentage;
+            if (percentage === 100) {
               toast.update(fileName, {
                 id: fileName,
                 duration: 3000,
@@ -116,8 +107,8 @@ const Compose = ({ category = "image" }) => {
                     onClose,
                     fileName,
                     `Completed!!!`,
-                    pendingProgress,
-                    controller
+                    percentage,
+                    uploader
                   ),
               });
               setUploadingFiles((files) =>
@@ -134,30 +125,38 @@ const Compose = ({ category = "image" }) => {
                     onClose,
                     fileName,
                     `Uploading...`,
-                    pendingProgress,
-                    controller
+                    percentage,
+                    uploader,
+                    "visible",
+                    fileName,
+                    handleRemoveFile
                   ),
               });
             }
-          },
+          }
+        })
+        .onError((error) => {
+          setChosenFiles([]);
+          console.error(error);
+          toast.update(fileName, {
+            id: fileName,
+            duration: 3000,
+            status: "loading",
+            render: ({ id, onClose }) =>
+              toastConfig(
+                id,
+                onClose,
+                fileName,
+                error?.response?.data?.message,
+                null,
+                "hidden"
+              ),
+          });
         });
-      } catch (e) {
-        toast.update(fileName, {
-          id: fileName,
-          duration: 3000,
-          status: "loading",
-          render: ({ id, onClose }) =>
-            toastConfig(
-              id,
-              onClose,
-              fileName,
-              e?.response?.data?.message,
-              null,
-              controller,
-              "hidden"
-            ),
-        });
-      }
+
+      uploader.start();
+
+      setUploadingFiles((files) => [fileName, ...files]);
     }
   }
 
@@ -216,7 +215,6 @@ const Compose = ({ category = "image" }) => {
 export default Compose;
 
 const ModalBodyItem = ({ files, handleFileChange }) => {
-  console.log({ files });
   const removeFile = (name) => {
     handleFileChange(files?.filter((file) => file?.name !== name));
   };
