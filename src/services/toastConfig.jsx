@@ -31,8 +31,10 @@ export function toastConfig(
   title,
   description,
   progressValue,
-  controller,
-  cancelBtnVisibility = "hidden"
+  uploader,
+  cancelBtnVisibility = "hidden",
+  fileName,
+  handleRemoveFile
 ) {
   return (
     <Box position={"relative"} key={id}>
@@ -71,7 +73,8 @@ export function toastConfig(
         <Text
           visibility={cancelBtnVisibility}
           onClick={() => {
-            controller.abort();
+            uploader.abort();
+            handleRemoveFile(fileName);
             alert("Upload cancelled");
             onClose();
           }}
