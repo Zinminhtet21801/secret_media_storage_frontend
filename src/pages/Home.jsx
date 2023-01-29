@@ -18,7 +18,7 @@ import { Link, useLocation } from "wouter";
 import { getCategoriesItems } from "../services/getCategoriesItems";
 import Pagination from "rc-pagination";
 import "../assets/pagination.styles.less";
-import { baseURL } from "../main";
+import { baseURL, s3ObjURL } from "../main";
 import { Spinner } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -74,7 +74,6 @@ const Home = () => {
   // if (!cookies.get("user")) return;
 
   // if(!document?.cookie.split("=")[1]) return;
-
   if (!getStoredUser()) return;
 
   const [location, setLocation] = useLocation();
@@ -156,7 +155,7 @@ const Home = () => {
       <Flex m={2} minHeight={"70vh"} justifyContent={"center"}>
         {/* A grid that will show 1 column on mobile, 3 columns on tablet and 5 columns on desktop. */}
         {!isLoading ? (
-          categoriesItems?.data.length > 0 ? (
+          categoriesItems?.data?.length > 0 ? (
             <SimpleGrid
               columns={[1, 1, 3, 3, 3, 5]}
               spacing={10}
@@ -373,7 +372,7 @@ const ShowItems = ({ items, category, mail }) => {
                   <Image
                     alt={name}
                     // src={`${baseURL}/uploads/${mail}/${type}/${media}`}
-                    src={`${baseURL}/uploads/${mail}/${type}/${name}`}
+                    src={`${s3ObjURL}/${mail}/${type}/${name}`}
                     width={300}
                   />
                 </AspectRatioImageContainer>
