@@ -1,7 +1,6 @@
 import {
   Flex,
   Box,
-  Checkbox,
   Stack,
   Button,
   Heading,
@@ -10,7 +9,7 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { useFormik } from "formik";
-import { Link, useLocation } from "wouter";
+import { Link } from "wouter";
 import InputWithLabel from "../components/InputWithLabel";
 import PasswordForm from "../components/passwordForm";
 import { signInSchema } from "../schemas/signIn.schema";
@@ -115,7 +114,7 @@ export default function SignIn() {
                   align={"start"}
                   justify={"space-between"}
                 >
-                  <Checkbox>Remember me</Checkbox>
+                  {/* <Checkbox>Remember me</Checkbox> */}
                   <Link
                     style={{
                       color: "#4299e1",
