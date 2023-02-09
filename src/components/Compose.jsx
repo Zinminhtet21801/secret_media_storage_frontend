@@ -78,7 +78,7 @@ const Compose = ({ category = "image" }) => {
       let percentage = undefined;
       toast({
         id: fileName,
-        duration: 3000,
+        duration: null,
         status: "loading",
         render: ({ id, onClose }) =>
           toastConfig(id, onClose, fileName, `Uploading...`, 0, uploader),
