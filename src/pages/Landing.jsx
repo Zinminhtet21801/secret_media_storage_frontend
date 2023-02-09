@@ -1,18 +1,8 @@
-import {
-  Flex,
-  Container,
-  Heading,
-  Stack,
-  Text,
-  Button,
-  Icon,
-  // Link,
-} from "@chakra-ui/react";
-import { Link } from "wouter";
+import { Flex, Container, Heading, Stack, Text } from "@chakra-ui/react";
 import { HomePageSVG } from "../assets/svgs/homepage";
+import LinkButton from "../components/LinkButton";
 
 export default function Landing() {
-
   return (
     <Container maxW={"5xl"}>
       <Stack
@@ -36,25 +26,23 @@ export default function Landing() {
           care too. Keep track of your data. Store your everyting.
         </Text>
         <Stack spacing={6} direction={"row"}>
-          <Link
-            href="/signup"
-            // _hover={{
-            //   textDecoration: "none",
-            // }}
-          >
-            <Button
-              rounded={"full"}
-              px={6}
-              colorScheme={"orange"}
-              bg={"orange.400"}
-              _hover={{ bg: "orange.500" }}
-            >
-              Get started
-            </Button>
-          </Link>
-          <Button rounded={"full"} px={6}>
-            Learn more
-          </Button>
+          <LinkButton
+            url={"/signup"}
+            key={"/signup"}
+            buttonText={"Get started"}
+            rounded={"full"}
+            px={6}
+            colorScheme={"orange"}
+            bg={"orange.400"}
+            _hover={{ bg: "orange.500" }}
+          />
+          <LinkButton
+            key={"Tech Stack"}
+            buttonText={"Tech Stack"}
+            url={"/techStack"}
+            rounded={"full"}
+            px={6}
+          />
         </Stack>
         <Flex w={"full"}>
           <Illustration
