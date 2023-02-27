@@ -62,7 +62,6 @@ export const useAuth = () => {
       const { error, message, statusCode } = e?.response?.data;
       ++errorToastCount;
       const errorId = `SignInError${message}${errorToastCount}`;
-      console.log(errorId);
       toast({
         id: errorId,
         duration: 3000,
