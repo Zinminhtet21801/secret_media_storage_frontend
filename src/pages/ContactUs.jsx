@@ -66,7 +66,8 @@ export default function ContactUs() {
           withCredentials: true,
         }
       );
-      if (res.status === 201) {
+      
+      if (res.status === 201 || res.status === 200) {
         toast({
           title: "Message Sent Successfully!!!",
           description: "We've received your message.",
@@ -77,6 +78,7 @@ export default function ContactUs() {
         });
         setLocation("/home");
       }
+
     } catch (err) {
       toast({
         title: "Message Failed!!!",

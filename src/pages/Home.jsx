@@ -10,9 +10,8 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import Compose from "../components/Compose";
-import { categories } from "../assets/Categories";
+import ShowCategories from "../components/ShowCategories";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import ItemBox from "../components/SquareItemBox";
 import { getQuantityCounts } from "../services/getQuantityCounts";
 import { Link, useLocation } from "wouter";
 import { getCategoriesItems } from "../services/getCategoriesItems";
@@ -20,7 +19,7 @@ import Pagination from "rc-pagination";
 import "../assets/pagination.styles.less";
 import { baseURL, s3ObjURL } from "../main";
 import { Spinner } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import MenuComponent from "../components/MenuComponent";
 import AspectRatioImageContainer from "../components/AspectRatioImageContainer";
@@ -37,7 +36,7 @@ const itemsCount = {
   others: 0,
 };
 
-let count = 0;
+let count = 1;
 
 const itemRender = (current, type, element, category) => {
   /* Rendering the page number. */
@@ -69,19 +68,14 @@ const itemRender = (current, type, element, category) => {
 };
 
 const Home = () => {
+  console.log("Home component rendered", count++);
   /* Checking if the user is logged in or not. If the user is not logged in, it will return. */
-
-  // if (!cookies.get("user")) return;
-
-  // if(!document?.cookie.split("=")[1]) return;
   if (!getStoredUser()) return;
 
   const [location, setLocation] = useLocation();
   const [category, setCategory] = useState("image");
   const [user, setUser] = useRecoilState(userState);
   const queryClient = useQueryClient();
-
-  // if (!document?.cookie.split("=")[1]) return;
 
   useEffect(() => {
     if (location === "/home" || location === "/home/") {
@@ -94,7 +88,6 @@ const Home = () => {
     setLocation(`/home/${categoryArg}/1`);
   };
 
-  // const category = location.split("/")[2] ? location.split("/")[2] : undefined;
   const pageNumber = location.split("/")[3]
     ? Number(location.split("/")[3])
     : 1;
@@ -389,23 +382,4 @@ const ShowItems = ({ items, category, mail }) => {
   );
 };
 
-const ShowCategories = ({
-  fetchQuantity = itemsCount,
-  align = "horizontal",
-  separatorLine = false,
-  setCategoryHandler,
-}) => {
-  const items = categories?.map((category, index) => (
-    <ItemBox
-      name={category.name}
-      key={index}
-      quantity={fetchQuantity[category.name.toLowerCase()]}
-      align={align}
-      separatorLine={separatorLine}
-      setCategoryHandler={setCategoryHandler}
-    />
-  ));
-  return items;
-};
-
-export default Home;
+export default memo(Home);

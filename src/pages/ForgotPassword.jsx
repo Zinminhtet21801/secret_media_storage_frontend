@@ -7,23 +7,39 @@ import {
   Stack,
   Text,
   useColorModeValue,
+  useToast,
 } from "@chakra-ui/react";
 import { useFormik } from "formik";
 import { forgotPasswordSchema } from "../schemas/forgotPassword.schema";
 import { AxiosInstance } from "../axios/axiosInstance";
-
-const onSubmit = async (values, actions) => {
-  const res = await AxiosInstance({
-    url: "/user/send-reset-password-email",
-    method: "POST",
-    data: {
-      ...values,
-    },
-  });
-  res.status === 201 && actions.resetForm();
-};
+import { toastConfig } from "../services/toastConfig";
 
 export default function ForgotPasswordForm() {
+  const toast = useToast();
+
+  const onSubmit = async (values, actions) => {
+    try {
+      const res = await AxiosInstance({
+        url: "/user/send-reset-password-email",
+        method: "POST",
+        data: {
+          ...values,
+        },
+      });
+      res.status === 201 && actions.resetForm();
+    } catch (e) {
+      const message = e.response.data.message
+      toast({
+        // id: errorId,
+        duration: 3000,
+        status: "error",
+        position: "bottom-left",
+        render: ({ id, onClose }) =>
+          toastConfig(id, onClose, "Sign in failed", message, null),
+      });
+    }
+  };
+
   const {
     values,
     errors,
@@ -43,7 +59,6 @@ export default function ForgotPasswordForm() {
   return (
     <form onSubmit={handleSubmit} autoComplete="off">
       <Flex
-        minH={"100vh"}
         align={"center"}
         justify={"center"}
         bg={useColorModeValue("gray.50", "gray.800")}
