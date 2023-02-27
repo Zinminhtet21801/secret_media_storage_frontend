@@ -8,26 +8,37 @@ import {
   MenuList,
   MenuItem,
   MenuDivider,
-  useDisclosure,
   useColorModeValue,
   Stack,
-  useColorMode,
   Center,
   Image,
 } from "@chakra-ui/react";
-import { MoonIcon, SunIcon } from "@chakra-ui/icons";
 import LogoImage from "../assets/images/logo.png";
 import { useAuth } from "../components/hooks/useAuth";
 import { useUser } from "../components/hooks/useUser";
 import { useLocation } from "wouter";
 import { useEffect } from "react";
 import { getStoredUser } from "../user-storage";
+import ThemeToggler from "./ThemeToggler";
+import SearchBar from "./SearchBar";
+import { useQueryClient } from "react-query";
+import { AxiosInstance } from "../axios/axiosInstance";
+
+const onSearch = async (keyword) => {
+  await AxiosInstance({
+    method: "GET",
+    url: `/media/search`,
+    params: {
+      keyword,
+    },
+  });
+};
 
 export default function Nav() {
-  const { colorMode, toggleColorMode } = useColorMode();
-  const { user } = useUser();
+  const { user, refetchUser } = useUser();
   const [location, setLocation] = useLocation();
   const { signOut } = useAuth();
+  const DUMMY_IMAGE_URL = "https://avatars.dicebear.com/api/male/username.svg";
 
   useEffect(() => {
     if (getStoredUser()?.email) {
@@ -35,75 +46,29 @@ export default function Nav() {
       if (storedUserEmail && location.includes("home")) return;
       if (storedUserEmail && !location.includes("home"))
         setLocation("/home/image/1");
-    } else if (location.includes("home") ) setLocation("/");
+    } else if (getStoredUser()?.email) {
+      console.log("refetching user");
+      refetchUser();
+    } else if (location.includes("home")) setLocation("/");
   }, [location, user?.email]);
 
   return (
     <>
       <Box minH={"5vh"} bg={useColorModeValue("gray.100", "gray.900")} px={4}>
         <Flex h={16} alignItems={"center"} justifyContent={"space-between"}>
-          <Box>
-            <Image
-              src={LogoImage}
-              height={10}
-              borderRadius={"full"}
-              _hover={{
-                cursor: "pointer",
-              }}
-              onClick={() => setLocation("/")}
-              // onClick={getProfile}
-            />
-          </Box>
-
+          <Logo LogoImage={LogoImage} setLocation={setLocation} />
+          {user.email && <SearchBar onSearch={onSearch} />}
           <Flex alignItems={"center"}>
             <Stack direction={"row"} spacing={7}>
-              <Button onClick={toggleColorMode}>
-                {colorMode === "light" ? <MoonIcon /> : <SunIcon />}
-              </Button>
-
+              <ThemeToggler />
               {user.email && (
                 <Menu>
-                  <MenuButton
-                    as={Button}
-                    rounded={"full"}
-                    variant={"link"}
-                    cursor={"pointer"}
-                    w={0}
-                  >
-                    <Avatar
-                      size={"sm"}
-                      src={"https://avatars.dicebear.com/api/male/username.svg"}
-                    />
-                  </MenuButton>
-                  <MenuList alignItems={"center"}>
-                    <br />
-                    <Center>
-                      <Avatar
-                        size={"2xl"}
-                        src={
-                          "https://avatars.dicebear.com/api/male/username.svg"
-                        }
-                      />
-                    </Center>
-                    <br />
-                    <Center>
-                      <p>{user.fullName}</p>
-                    </Center>
-                    <br />
-                    <MenuDivider />
-                    {/* <NavLink> */}
-                    {/* <MenuItem>Your Servers</MenuItem> */}
-                    {/* </NavLink> */}
-                    {/* <NavLink> */}
-                    <MenuItem>Account Settings</MenuItem>
-                    {/* </NavLink> */}
-                    {/* <NavLink> */}
-                    <MenuItem onClick={signOut}>Logout</MenuItem>
-                    {/* </NavLink> */}
-                    {/* <MenuItem>Your Servers</MenuItem>
-                  <MenuItem>Account Settings</MenuItem>
-                  <MenuItem>Logout</MenuItem> */}
-                  </MenuList>
+                  <AvatarMenuToggleButton imgUrl={DUMMY_IMAGE_URL} />
+                  <UserMenuList
+                    user={user}
+                    imgUrl={DUMMY_IMAGE_URL}
+                    signOut={signOut}
+                  />
                 </Menu>
               )}
             </Stack>
@@ -113,3 +78,70 @@ export default function Nav() {
     </>
   );
 }
+
+const Logo = ({ LogoImage, setLocation }) => {
+  return (
+    <Box>
+      <Image
+        src={LogoImage}
+        height={10}
+        borderRadius={"full"}
+        _hover={{
+          cursor: "pointer",
+        }}
+        onClick={() => setLocation("/")}
+        // onClick={getProfile}
+      />
+    </Box>
+  );
+};
+
+const AvatarContainer = ({ size = "sm", imgUrl }) => (
+  <Avatar size={size} src={imgUrl} />
+);
+
+const AvatarMenuToggleButton = ({ imgUrl }) => {
+  return (
+    <MenuButton
+      as={Button}
+      rounded={"full"}
+      variant={"link"}
+      cursor={"pointer"}
+      w={0}
+    >
+      <AvatarContainer size={"sm"} imgUrl={imgUrl} />
+    </MenuButton>
+  );
+};
+
+const UserMenuList = ({ user, imgUrl, signOut }) => {
+  return (
+    <MenuList alignItems={"center"}>
+      <br />
+      <UserMenuHeader imgUrl={imgUrl} user={user} />
+      <br />
+      <MenuDivider />
+
+      <UserMenuItem title="Account Settings" onClickHandler={null} />
+      <UserMenuItem title={"Logout"} onClickHandler={signOut} />
+    </MenuList>
+  );
+};
+
+const UserMenuHeader = ({ imgUrl, user }) => {
+  return (
+    <>
+      <Center>
+        <AvatarContainer size={"2xl"} imgUrl={imgUrl} />
+      </Center>
+      <br />
+      <Center>
+        <p>{user.fullName}</p>
+      </Center>
+    </>
+  );
+};
+
+const UserMenuItem = ({ title, onClickHandler }) => {
+  return <MenuItem onClick={onClickHandler}>{title}</MenuItem>;
+};
