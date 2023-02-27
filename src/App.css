@@ -1,6 +1,9 @@
 .App {
   text-align: center;
   max-width: 100vw;
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
 }
 
 .App-logo {
