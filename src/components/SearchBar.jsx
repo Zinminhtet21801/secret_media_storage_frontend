@@ -1,25 +1,15 @@
-import { useState } from "react";
 import { SearchIcon } from "@chakra-ui/icons";
+import { useDisclosure } from "@chakra-ui/react";
 import { IconButton } from "@chakra-ui/react";
+import { AxiosInstance } from "../axios/axiosInstance";
+import SearchDrawer from "./SearchDrawer";
 
-const SearchBar = ({ onSearch }) => {
-  const [term, setTerm] = useState("");
-
-  const handleChange = (event) => {
-    setTerm(event.target.value);
-  };
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    onSearch(term);
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <input type="text" value={term} onChange={handleChange} />
-      <IconButton type="submit" icon={<SearchIcon />} />
-    </form>
-  );
+const SearchBar = () => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  if (isOpen) {
+    return <SearchDrawer isOpen={isOpen} onClose={onClose} />;
+  }
+  return <IconButton type="submit" icon={<SearchIcon />} onClick={onOpen} />;
 };
 
 export default SearchBar;
