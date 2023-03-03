@@ -24,15 +24,7 @@ import SearchBar from "./SearchBar";
 import { useQueryClient } from "react-query";
 import { AxiosInstance } from "../axios/axiosInstance";
 
-const onSearch = async (keyword) => {
-  await AxiosInstance({
-    method: "GET",
-    url: `/media/search`,
-    params: {
-      keyword,
-    },
-  });
-};
+
 
 export default function Nav() {
   const { user, refetchUser } = useUser();
@@ -57,9 +49,10 @@ export default function Nav() {
       <Box minH={"5vh"} bg={useColorModeValue("gray.100", "gray.900")} px={4}>
         <Flex h={16} alignItems={"center"} justifyContent={"space-between"}>
           <Logo LogoImage={LogoImage} setLocation={setLocation} />
-          {user.email && <SearchBar onSearch={onSearch} />}
+          {/* {user.email && <SearchBar onSearch={onSearch} />} */}
           <Flex alignItems={"center"}>
             <Stack direction={"row"} spacing={7}>
+              <SearchBar  />
               <ThemeToggler />
               {user.email && (
                 <Menu>
