@@ -8,11 +8,12 @@ import {
   Menu,
   MenuItem,
   useToast,
+  useDisclosure,
+  Card,
 } from "@chakra-ui/react";
 import Compose from "../components/Compose";
-import { categories } from "../assets/Categories";
+import ShowCategories from "../components/ShowCategories";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import ItemBox from "../components/SquareItemBox";
 import { getQuantityCounts } from "../services/getQuantityCounts";
 import { Link, useLocation } from "wouter";
 import { getCategoriesItems } from "../services/getCategoriesItems";
@@ -20,7 +21,7 @@ import Pagination from "rc-pagination";
 import "../assets/pagination.styles.less";
 import { baseURL, s3ObjURL } from "../main";
 import { Spinner } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import MenuComponent from "../components/MenuComponent";
 import AspectRatioImageContainer from "../components/AspectRatioImageContainer";
@@ -29,6 +30,8 @@ import { userState } from "../atoms/atoms";
 import { useRecoilState } from "recoil";
 import { toastConfig } from "../services/toastConfig";
 import { getStoredUser } from "../user-storage";
+import ConfirmAlertDialog from "../components/AlertDialog";
+import itemRender from "../utils/paginationRenderItems";
 
 const itemsCount = {
   audio: 0,
@@ -37,51 +40,17 @@ const itemsCount = {
   others: 0,
 };
 
-let count = 0;
-
-const itemRender = (current, type, element, category) => {
-  /* Rendering the page number. */
-  if (type === "page") {
-    return <Link to={`/home/${category}/${current}`}>{current}</Link>;
-  }
-
-  // write code for prev pagination
-  if (type === "prev") {
-    return (
-      <div>
-        <Link to={current > 0 ? `/home/${category}/${current}` : ``}>
-          <Text color={"white"}>Prev</Text>
-        </Link>
-      </div>
-    );
-  }
-
-  // write code for next pagination
-  if (type === "next") {
-    return (
-      <Link to={`/home/${category}/${current}`}>
-        <Text color={"white"}>Next</Text>
-      </Link>
-    );
-  }
-
-  return element;
-};
+let count = 1;
 
 const Home = () => {
+  console.log("Home component rendered", count++);
   /* Checking if the user is logged in or not. If the user is not logged in, it will return. */
-
-  // if (!cookies.get("user")) return;
-
-  // if(!document?.cookie.split("=")[1]) return;
   if (!getStoredUser()) return;
 
   const [location, setLocation] = useLocation();
   const [category, setCategory] = useState("image");
   const [user, setUser] = useRecoilState(userState);
   const queryClient = useQueryClient();
-
-  // if (!document?.cookie.split("=")[1]) return;
 
   useEffect(() => {
     if (location === "/home" || location === "/home/") {
@@ -94,7 +63,6 @@ const Home = () => {
     setLocation(`/home/${categoryArg}/1`);
   };
 
-  // const category = location.split("/")[2] ? location.split("/")[2] : undefined;
   const pageNumber = location.split("/")[3]
     ? Number(location.split("/")[3])
     : 1;
@@ -188,8 +156,9 @@ const Home = () => {
           showTotal={(total, range) =>
             `${range[0]} - ${range[1]} of ${total} items`
           }
-          itemRender={(page, type, element) =>
-            itemRender(page, type, element, category)
+          itemRender={
+            (page, type, element) =>
+              itemRender(page, type, element, `/home/${category}/${page}`, true) // page, type, element, link
           }
         />
       )}
@@ -198,6 +167,7 @@ const Home = () => {
 };
 
 const ItemNameAndIconContainer = ({ name, id, category }) => {
+  const { onOpen, isOpen, onClose } = useDisclosure();
   const queryClient = useQueryClient();
   const toast = useToast();
   const removeMedia = async () => {
@@ -307,40 +277,48 @@ const ItemNameAndIconContainer = ({ name, id, category }) => {
   };
 
   return (
-    <HStack p={2} justifyContent={"space-between"}>
-      <Text whiteSpace={"nowrap"} textOverflow={"ellipsis"} overflow={"hidden"}>
-        {name}
-      </Text>
-      <Menu>
-        <MenuComponent
-          ariaLabel={"General options"}
-          colorScheme={"gray"}
-          icon={BsThreeDotsVertical}
+    <>
+      <HStack p={2} justifyContent={"space-between"}>
+        <Text
+          whiteSpace={"nowrap"}
+          textOverflow={"ellipsis"}
+          overflow={"hidden"}
         >
-          <MenuItem
-            key={`download-menu-item-${id}`}
-            aria-label="Download"
-            onClick={download}
+          {name}
+        </Text>
+        <Menu>
+          <MenuComponent
+            ariaLabel={"General options"}
+            colorScheme={"gray"}
+            icon={BsThreeDotsVertical}
           >
-            Download
-          </MenuItem>
-          <MenuItem
-            key={`remove-menu-item-${id}`}
-            aria-label="Remove"
-            onClick={remove}
-          >
-            Remove
-          </MenuItem>
-        </MenuComponent>
-      </Menu>
-    </HStack>
+            <MenuItem
+              key={`download-menu-item-${id}`}
+              aria-label="Download"
+              onClick={download}
+            >
+              Download
+            </MenuItem>
+            <MenuItem
+              key={`remove-menu-item-${id}`}
+              aria-label="Remove"
+              onClick={onOpen}
+            >
+              Remove
+            </MenuItem>
+          </MenuComponent>
+        </Menu>
+      </HStack>
+      {isOpen && (
+        <ConfirmAlertDialog isOpen={isOpen} remove={remove} onClose={onClose} />
+      )}
+    </>
   );
 };
 
-const ItemContainer = ({ id, children, height, width, bgColor }) => {
+const ItemContainer = ({ id, children, height, width }) => {
   return (
-    <Box
-      bg={bgColor}
+    <Card
       height={height}
       key={id}
       width={width}
@@ -351,7 +329,7 @@ const ItemContainer = ({ id, children, height, width, bgColor }) => {
       }}
     >
       {children}
-    </Box>
+    </Card>
   );
 };
 
@@ -361,12 +339,7 @@ const ShowItems = ({ items, category, mail }) => {
       {items &&
         items.map(({ id, name, type }) => {
           return (
-            <ItemContainer
-              id={id}
-              key={id}
-              height={"fit-content"}
-              bgColor={"gray.500"}
-            >
+            <ItemContainer id={id} key={id} height={"fit-content"}>
               {type === "image" && (
                 <AspectRatioImageContainer ratio={4 / 3}>
                   <Image
@@ -389,23 +362,4 @@ const ShowItems = ({ items, category, mail }) => {
   );
 };
 
-const ShowCategories = ({
-  fetchQuantity = itemsCount,
-  align = "horizontal",
-  separatorLine = false,
-  setCategoryHandler,
-}) => {
-  const items = categories?.map((category, index) => (
-    <ItemBox
-      name={category.name}
-      key={index}
-      quantity={fetchQuantity[category.name.toLowerCase()]}
-      align={align}
-      separatorLine={separatorLine}
-      setCategoryHandler={setCategoryHandler}
-    />
-  ));
-  return items;
-};
-
-export default Home;
+export default memo(Home);

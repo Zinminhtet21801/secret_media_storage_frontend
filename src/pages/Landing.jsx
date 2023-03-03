@@ -9,7 +9,7 @@ export default function Landing() {
         textAlign={"center"}
         align={"center"}
         spacing={{ base: 8, md: 10 }}
-        py={{ base: 20, md: 28 }}
+        paddingTop={{ base: 20, md: 10 }}
       >
         <Heading
           fontWeight={600}

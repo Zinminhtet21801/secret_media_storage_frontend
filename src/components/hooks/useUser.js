@@ -15,7 +15,14 @@ let errorToastCount = 0;
 
 async function getUserFromServer(user) {
   const source = axios.CancelToken.source();
-  if (getStoredUser() === null) return user;
+  if (getStoredUser()?.email) {
+    return getStoredUser();
+  }
+
+  if (user?.email) {
+    return user;
+  }
+
   const axiosResponse = await AxiosInstance.get("/user/profile", {
     cancelToken: source.token,
   });
@@ -41,10 +48,16 @@ export const useUser = () => {
       const { email, fullName } = axiosResponse;
       email && queryClient.invalidateQueries("itemsQuantity");
       email && queryClient.invalidateQueries([`items`]);
-      setUser({
-        fullName,
-        email,
-      });
+      email !== user.email &&
+        setUser({
+          fullName,
+          email,
+        });
+      email !== user.email &&
+        setStoredUser({
+          fullName,
+          email,
+        });
     },
     onError: (error) => {
       setUser({
@@ -83,7 +96,6 @@ export const useUser = () => {
       const { error, message, statusCode } = e.response.data;
       ++errorToastCount;
       const errorId = `SignInError${message}${errorToastCount}`;
-      console.log(errorId);
       toast({
         id: errorId,
         duration: 3000,
@@ -94,6 +106,10 @@ export const useUser = () => {
       });
     }
   };
+
+  function refetchUser() {
+    queryClient.refetchQueries("user");
+  }
 
   function updateUser(newUser) {
     const user = {
@@ -118,5 +134,6 @@ export const useUser = () => {
     user,
     updateUser,
     clearUser,
+    refetchUser,
   };
 };

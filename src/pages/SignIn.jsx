@@ -61,12 +61,17 @@ export default function SignIn() {
   return (
     <form onSubmit={handleSubmit} autoComplete="off">
       <Flex
-        minH={"100vh"}
         align={"center"}
         justify={"center"}
         bg={useColorModeValue("gray.50", "gray.800")}
       >
-        <Stack spacing={8} mx={"auto"} maxW={"lg"} py={12} px={6}>
+        <Stack
+          spacing={8}
+          mx={"auto"}
+          maxW={"lg"}
+          paddingTop={{ base: 20, md: 50 }}
+          px={6}
+        >
           <Stack align={"center"}>
             <Heading fontSize={"4xl"}>Sign in to your account</Heading>
             <Text fontSize={"lg"} color={"gray.600"}>
@@ -128,7 +133,8 @@ export default function SignIn() {
                   disabled={isSubmitting}
                   opacity={isSubmitting ? 0.35 : 1}
                   type="submit"
-                  loadingText="Submitting"
+                  isLoading={isSubmitting}
+                  loadingText="Logging in"
                   bg={"blue.400"}
                   color={"white"}
                   _hover={{

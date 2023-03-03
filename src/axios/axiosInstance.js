@@ -21,7 +21,6 @@ axios.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.log(error);
     const { status } = error?.response;
     if (status === 401) {
       // if the user is not logged in, then redirect to the login page

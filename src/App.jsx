@@ -10,15 +10,20 @@ import Home from "./pages/Home";
 import ContactUs from "./pages/ContactUs";
 import { Box } from "@chakra-ui/react";
 import TechStack from "./pages/TechStack";
+import WithAuth from "./components/WithAuth";
 
 function App() {
   return (
     <div className="App">
       <Nav />
-      <Box minH={"86.5vh"}>
+      <Box>
         <Switch>
           <Route path="/" component={Landing} />
-          <Route path="/home/:rest*" component={Home} />
+          <Route path="/home/:rest*">
+            <WithAuth>
+              <Home />
+            </WithAuth>
+          </Route>
 
           <Route path="/signin" component={SignIn} />
           <Route path="/signup" component={SignUp} />

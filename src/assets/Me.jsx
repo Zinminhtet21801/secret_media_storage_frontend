@@ -5,6 +5,8 @@ import {
   MdLocationOn,
   MdOutlineEmail,
 } from 'react-icons/md';
+import { EmailIcon } from '@chakra-ui/icons'
+const baseURL = import.meta.env.VITE_BASE_URL;
 export const SOCIAL_LINKS = [
   {
     id: 1,
@@ -24,6 +26,12 @@ export const SOCIAL_LINKS = [
     url: "https://www.linkedin.com/in/zin-min-htet-704971215/",
     icon: <FaLinkedin />,
   },
+  {
+    id: 4,
+    name: "Email",
+    url: `${baseURL}/user/contact`,
+    icon: <EmailIcon />,
+  }
 ];
 
 export const companyDetail = [
