@@ -1,4 +1,4 @@
-import {memo} from 'react'
+import { memo } from "react";
 import {
   Drawer,
   DrawerOverlay,
@@ -19,32 +19,46 @@ import {
   CardFooter,
   Button,
   Flex,
+  useToast,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { SearchIcon, CloseIcon } from "@chakra-ui/icons";
-
+import { useMutation } from "react-query";
 import Pagination from "rc-pagination";
 import "../assets/pagination.styles.less";
 import useSearchItems from "./hooks/useSearchItems";
 import itemRender from "../utils/paginationRenderItems";
+import { downloadMedia, removeMedia } from "../utils/manageMedia";
+import { useQueryClient } from "react-query";
+import ConfirmAlertDialog from "./AlertDialog";
+import { useResetRecoilState } from "recoil";
+import { searchState } from "../atoms/atoms";
 
 function SearchDrawer({ isOpen, onClose }) {
+  const resetSearchState = useResetRecoilState(searchState);
   const {
-    isLoading,
-    searchItems,
     total,
+    currentPage,
+    setCurrentPage,
     handleSubmit,
     setTerm,
     handleChange,
     term,
     disableElement,
-    setSubmitClicked,
-    currentPage,
-    setCurrentPage,
+    handleSubmitClicked,
+    isLoading,
+    refetchData,
+    searchItems,
   } = useSearchItems();
+
+  const drawerCloseCallback = () => {
+    onClose();
+    resetSearchState();
+  };
 
   return (
     <>
-      <Drawer onClose={onClose} isOpen={isOpen} size={"full"}>
+      <Drawer onClose={drawerCloseCallback} isOpen={isOpen} size={"full"}>
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />
@@ -54,15 +68,17 @@ function SearchDrawer({ isOpen, onClose }) {
               handleSubmit={handleSubmit}
               setTerm={setTerm}
               handleChange={handleChange}
-              disableElement={disableElement}
-              setSubmitClicked={setSubmitClicked}
               term={term}
+              disableElement={disableElement}
+              handleSubmitClicked={handleSubmitClicked}
             />
             <Divider py={2} my={2} />
             <DrawerBodyContent
-              total={total}
               isLoading={isLoading}
               searchItems={searchItems}
+              total={total}
+              term={term}
+              refetchData={refetchData}
             />
             <DrawerFooter>
               {total > 10 && (
@@ -101,7 +117,7 @@ const DrawerBodyHeader = ({
   handleChange,
   term,
   disableElement,
-  setSubmitClicked,
+  handleSubmitClicked,
 }) => {
   return (
     <form onSubmit={handleSubmit}>
@@ -127,14 +143,20 @@ const DrawerBodyHeader = ({
           type="submit"
           icon={<SearchIcon />}
           isDisabled={!disableElement(term)}
-          onClick={() => setSubmitClicked((prev) => !prev)}
+          onClick={() => handleSubmitClicked((prev) => !prev)}
         />
       </HStack>
     </form>
   );
 };
 
-const RenderSearchItems = ({ searchItems, isLoading, total }) => {
+const RenderSearchItems = ({
+  searchItems,
+  isLoading,
+  total,
+  term,
+  refetchData,
+}) => {
   if (isLoading) {
     return (
       <Flex justify="center" align="center" h="100%">
@@ -151,33 +173,108 @@ const RenderSearchItems = ({ searchItems, isLoading, total }) => {
     );
   }
 
-  return searchItems?.map((item) => {
+  return searchItems?.map(({ id, name, type: category }) => {
     return (
       <Card
         direction={{ base: "column", sm: "column", md: "row" }}
-        key={item.id}
+        key={id}
         mt={2}
         _hover={{ cursor: "pointer" }}
         variant="elevated"
         colorScheme={"pink"}
       >
         <CardBody noOfLines={1}>
-          <Text isTruncated>{item.name}</Text>
+          <Text isTruncated>{name}</Text>
         </CardBody>
         <CardFooter justify="space-between" flexWrap="wrap" gap={2}>
-          <Button variant="solid" colorScheme="red">
-            Remove
-          </Button>
-          <Button variant="solid" colorScheme="teal">
-            Download
-          </Button>
+          <RemoveButton
+            id={id}
+            category={category}
+            term={term}
+            refetchData={refetchData}
+          />
+          <DownloadButton id={id} name={name} category={category} />
         </CardFooter>
       </Card>
     );
   });
 };
 
-const DrawerBodyContent = ({ total, searchItems, isLoading }) => {
+const RemoveButton = ({ id, category, refetchData }) => {
+  const queryClient = useQueryClient();
+  const { onOpen, isOpen, onClose } = useDisclosure();
+  const { data, mutate: mutateRemoveMedia } = useMutation(
+    () => removeMedia(id),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries("itemsQuantity");
+        // queryClient.refetchQueries("itemsQuantity");
+        queryClient.invalidateQueries(["items", category]);
+        refetchData();
+      },
+
+      onError: (err) => {
+        console.log(err);
+      },
+    }
+  );
+
+  const remove = () => {
+    mutateRemoveMedia({ id: `${category}Items` });
+  };
+
+  return (
+    <>
+      <Button variant="solid" colorScheme="red" onClick={onOpen}>
+        Remove
+      </Button>
+      {isOpen && (
+        <ConfirmAlertDialog isOpen={isOpen} remove={remove} onClose={onClose} />
+      )}
+    </>
+  );
+};
+
+const DownloadButton = ({ id, name, category }) => {
+  const toast = useToast();
+  const queryClient = useQueryClient();
+
+  const { mutate: mutateDownloadMedia } = useMutation(
+    () => downloadMedia(toast, name, category, id),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries("itemsQuantity");
+        // queryClient.refetchQueries("itemsQuantity");
+        queryClient.invalidateQueries(["items", category]);
+        // queryClient.refetchQueries(`${category}Items`);
+      },
+      onError: (err) => {
+        console.log(err);
+      },
+    }
+  );
+
+  const download = () => {
+    mutateDownloadMedia({ id, category });
+  };
+  return (
+    <Button
+      variant="solid"
+      colorScheme="teal"
+      onClick={() => download(id, category)}
+    >
+      Download
+    </Button>
+  );
+};
+
+const DrawerBodyContent = ({
+  isLoading,
+  searchItems,
+  total,
+  term,
+  refetchData,
+}) => {
   if (isLoading) {
     return (
       <Flex justify="center" align="center" h="100%">
@@ -191,6 +288,8 @@ const DrawerBodyContent = ({ total, searchItems, isLoading }) => {
         isLoading={isLoading}
         searchItems={searchItems}
         total={total}
+        term={term}
+        refetchData={refetchData}
       />
     </>
   );
