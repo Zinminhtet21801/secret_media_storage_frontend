@@ -34,7 +34,14 @@ const ConfirmAlertDialog = ({ remove, isOpen, onClose }) => {
           <Button ref={cancelRef} onClick={onClose}>
             No
           </Button>
-          <Button colorScheme="red" ml={3} onClick={remove}>
+          <Button
+            colorScheme="red"
+            ml={3}
+            onClick={() => {
+              remove();
+              onClose();
+            }}
+          >
             Yes
           </Button>
         </AlertDialogFooter>

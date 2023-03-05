@@ -8,3 +8,15 @@ export const userState = atom({
   },
 });
 
+export const searchState = atom({
+  key: "search",
+  default: {
+    term: "",
+    submitClicked: false,
+    currentPage: 1,
+    searchItems: [],
+    total: 0,
+    isLoading: false,
+    refetch: false,
+  },
+});

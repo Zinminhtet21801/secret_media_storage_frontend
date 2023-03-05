@@ -1,5 +1,4 @@
 import {
-  Box,
   HStack,
   SimpleGrid,
   Image,
@@ -15,23 +14,22 @@ import Compose from "../components/Compose";
 import ShowCategories from "../components/ShowCategories";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { getQuantityCounts } from "../services/getQuantityCounts";
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import { getCategoriesItems } from "../services/getCategoriesItems";
 import Pagination from "rc-pagination";
 import "../assets/pagination.styles.less";
-import { baseURL, s3ObjURL } from "../main";
+import { s3ObjURL } from "../main";
 import { Spinner } from "@chakra-ui/react";
 import { useEffect, useState, memo } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import MenuComponent from "../components/MenuComponent";
 import AspectRatioImageContainer from "../components/AspectRatioImageContainer";
-import axios from "axios";
 import { userState } from "../atoms/atoms";
 import { useRecoilState } from "recoil";
-import { toastConfig } from "../services/toastConfig";
 import { getStoredUser } from "../user-storage";
 import ConfirmAlertDialog from "../components/AlertDialog";
 import itemRender from "../utils/paginationRenderItems";
+import { downloadMedia, removeMedia } from "../utils/manageMedia";
 
 const itemsCount = {
   audio: 0,
@@ -43,7 +41,8 @@ const itemsCount = {
 let count = 1;
 
 const Home = () => {
-  console.log("Home component rendered", count++);
+  //TODO: make home component a memoized component to prevent unnecessary re-renders.
+  // console.log("Home component rendered", count++);
   /* Checking if the user is logged in or not. If the user is not logged in, it will return. */
   if (!getStoredUser()) return;
 
@@ -170,103 +169,37 @@ const ItemNameAndIconContainer = ({ name, id, category }) => {
   const { onOpen, isOpen, onClose } = useDisclosure();
   const queryClient = useQueryClient();
   const toast = useToast();
-  const removeMedia = async () => {
-    const res = await axios.delete(`${baseURL}/media/remove/${id}`, {
-      // headers: {
-      //   Authorization: `Bearer ${document.cookie.split("=")[1]}`,
-      // },
-      withCredentials: true,
-    });
-    return res;
-  };
 
-  const downloadMedia = async () => {
-    if (toast.isActive(name)) {
-      count++;
-      return toast({
-        id: name + count,
-        duration: 3000,
-        render: ({ id, onClose }) =>
-          toastConfig(id, onClose, name, `${name} is already in queue.`, 100),
-      });
-    }
-
-    toast({
-      id: name,
-      duration: 3000,
-      status: "loading",
-      render: ({ id, onClose }) =>
-        toastConfig(id, onClose, name, `Downloading...`, 0),
-    });
-    const link = document.createElement("a");
-    const res = await axios.get(`${baseURL}/media/download/${category}/${id}`, {
-      // headers: {
-      //   Authorization: `Bearer ${document.cookie.split("=")[1]}`,
-      // },
-      withCredentials: true,
-      responseType: "blob",
-      onDownloadProgress: (progressEvent) => {
-        let pendingProgress = Math.round(
-          (progressEvent.loaded / progressEvent.total) * 100
-        );
-        if (pendingProgress === 100) {
-          toast.update(name, {
-            id: name,
-            duration: 3000,
-            status: "loading",
-            render: ({ id, onClose }) =>
-              toastConfig(id, onClose, name, `Completed!!!`, pendingProgress),
-          });
-        } else {
-          toast.update(name, {
-            id: name,
-            duration: null,
-            status: "loading",
-            render: ({ id, onClose }) =>
-              toastConfig(id, onClose, name, `Downloading...`, pendingProgress),
-          });
-        }
+  const { data, mutate: mutateRemoveMedia } = useMutation(
+    () => removeMedia(id),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries("itemsQuantity");
+        // queryClient.refetchQueries("itemsQuantity");
+        queryClient.invalidateQueries(["items", category]);
+        // queryClient.refetchQueries(`${category}Items`);
       },
-    });
 
-    const url = window.URL.createObjectURL(
-      new Blob([res.data], {
-        type: res.headers["content-type"],
-      })
-    );
+      onError: (err) => {
+        console.log(err);
+      },
+    }
+  );
 
-    link.href = url;
-    link.setAttribute("download", name);
-    document.body.appendChild(link);
-    link.click();
-    window.URL.revokeObjectURL(url);
-
-    return res;
-  };
-  const { data, mutate: mutateRemoveMedia } = useMutation(removeMedia, {
-    onSuccess: () => {
-      queryClient.invalidateQueries("itemsQuantity");
-      // queryClient.refetchQueries("itemsQuantity");
-      queryClient.invalidateQueries(["items", category]);
-      // queryClient.refetchQueries(`${category}Items`);
-    },
-
-    onError: (err) => {
-      console.log(err);
-    },
-  });
-
-  const { mutate: mutateDownloadMedia } = useMutation(downloadMedia, {
-    onSuccess: () => {
-      queryClient.invalidateQueries("itemsQuantity");
-      // queryClient.refetchQueries("itemsQuantity");
-      queryClient.invalidateQueries(["items", category]);
-      // queryClient.refetchQueries(`${category}Items`);
-    },
-    onError: (err) => {
-      console.log(err);
-    },
-  });
+  const { mutate: mutateDownloadMedia } = useMutation(
+    () => downloadMedia(toast, name, category, id),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries("itemsQuantity");
+        // queryClient.refetchQueries("itemsQuantity");
+        queryClient.invalidateQueries(["items", category]);
+        // queryClient.refetchQueries(`${category}Items`);
+      },
+      onError: (err) => {
+        console.log(err);
+      },
+    }
+  );
 
   const download = () => {
     mutateDownloadMedia({ id, category });

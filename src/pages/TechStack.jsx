@@ -84,6 +84,7 @@ const Card = ({ item }) => {
           <Image
             boxSize="50px"
             src={item.image}
+            borderRadius={"lg"}
             fallbackSrc="https://via.placeholder.com/150"
           />
         )}
