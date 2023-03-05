@@ -31,6 +31,11 @@ export const techStackFrontendItems = [
         language: "Wouter",
         link: "https://www.npmjs.com/package/wouter",
       },
+      {
+        image: "https://cdn.worldvectorlogo.com/logos/recoil-js.svg",
+        language: "RecoilJS",
+        link: "https://recoiljs.org/",
+      },
     ],
   },
   {
