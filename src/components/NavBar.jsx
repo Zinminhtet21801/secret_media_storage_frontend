@@ -24,8 +24,6 @@ import SearchBar from "./SearchBar";
 import { useQueryClient } from "react-query";
 import { AxiosInstance } from "../axios/axiosInstance";
 
-
-
 export default function Nav() {
   const { user, refetchUser } = useUser();
   const [location, setLocation] = useLocation();
@@ -52,7 +50,7 @@ export default function Nav() {
           {/* {user.email && <SearchBar onSearch={onSearch} />} */}
           <Flex alignItems={"center"}>
             <Stack direction={"row"} spacing={7}>
-              <SearchBar  />
+              <SearchBar />
               <ThemeToggler />
               {user.email && (
                 <Menu>
@@ -78,10 +76,12 @@ const Logo = ({ LogoImage, setLocation }) => {
       <Image
         src={LogoImage}
         height={10}
+        width={10}
         borderRadius={"full"}
         _hover={{
           cursor: "pointer",
         }}
+        alt="website logo"
         onClick={() => setLocation("/")}
         // onClick={getProfile}
       />
