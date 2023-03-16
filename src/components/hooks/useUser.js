@@ -23,15 +23,19 @@ async function getUserFromServer(user) {
     return user;
   }
 
-  const axiosResponse = await AxiosInstance.get("/user/profile", {
-    cancelToken: source.token,
-  });
+  try {
+    const axiosResponse = await AxiosInstance.get("/user/profile", {
+      cancelToken: source.token,
+    });
 
-  axiosResponse.cancel = () => {
-    source.cancel();
-  };
+    axiosResponse.cancel = () => {
+      source.cancel();
+    };
 
-  return axiosResponse.data;
+    return axiosResponse.data;
+  } catch (e) {
+    throw e;
+  }
 }
 
 export const useUser = () => {
@@ -43,6 +47,7 @@ export const useUser = () => {
   useQuery("user", () => getUserFromServer(user), {
     // enabled: !!user?.email && location !== "/",
     // enabled: location.includes("home"),
+    retry: false,
     placeholderData: user,
     onSuccess: (axiosResponse) => {
       const { email, fullName } = axiosResponse;
@@ -59,7 +64,7 @@ export const useUser = () => {
           email,
         });
     },
-    onError: (error) => {
+    onError: () => {
       setUser({
         email: "",
         fullName: "",
