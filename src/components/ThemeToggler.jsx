@@ -5,7 +5,11 @@ const ThemeToggler = () => {
   const { colorMode, toggleColorMode } = useColorMode();
   return (
     <Button onClick={toggleColorMode}>
-      {colorMode === "light" ? <MoonIcon /> : <SunIcon />}
+      {colorMode === "light" ? (
+        <MoonIcon aria-label="dark mode button" />
+      ) : (
+        <SunIcon aria-label="light mode button" />
+      )}
     </Button>
   );
 };
