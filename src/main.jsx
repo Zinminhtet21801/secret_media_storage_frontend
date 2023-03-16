@@ -5,7 +5,7 @@ import {
 } from "@chakra-ui/react";
 import { QueryClientProvider } from "react-query";
 import React from "react";
-import ReactDOM, { createRoot } from "react-dom/client";
+import { createRoot } from "react-dom/client";
 import { RecoilRoot } from "recoil";
 import App from "./App";
 import "./index.css";

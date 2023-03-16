@@ -4,14 +4,13 @@ import {
   Stack,
   Collapse,
   Icon,
-  // Link,
   useColorModeValue,
   useDisclosure,
 } from "@chakra-ui/react";
 import { ChevronDownIcon } from "@chakra-ui/icons";
 import { Link } from "wouter";
 
-export const MobileNav= ({ label, children, href }) => {
+export const MobileNav = ({ label, children, href }) => {
   const { isOpen, onToggle } = useDisclosure();
 
   return (

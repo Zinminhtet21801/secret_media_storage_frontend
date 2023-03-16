@@ -27,8 +27,8 @@ function ModalComponent({
         }}
       >
         <ModalOverlay
-          // bg="blackAlpha.300"
-          // backdropFilter="blur(10px) hue-rotate(90deg)"
+        // bg="blackAlpha.300"
+        // backdropFilter="blur(10px) hue-rotate(90deg)"
         />
         <ModalContent>
           {children}

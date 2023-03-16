@@ -21,8 +21,6 @@ import { useEffect } from "react";
 import { getStoredUser } from "../user-storage";
 import ThemeToggler from "./ThemeToggler";
 import SearchBar from "./SearchBar";
-import { useQueryClient } from "react-query";
-import { AxiosInstance } from "../axios/axiosInstance";
 
 export default function Nav() {
   const { user, refetchUser } = useUser();

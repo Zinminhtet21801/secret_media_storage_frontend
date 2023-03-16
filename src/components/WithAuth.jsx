@@ -3,8 +3,6 @@ import { useUser } from "./hooks/useUser";
 import { memo } from "react";
 import { getStoredUser } from "../user-storage";
 
-let total = 0;
-
 const WithAuth = ({ children }) => {
   const { user } = useUser();
   getStoredUser()?.email;
