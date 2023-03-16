@@ -9,7 +9,14 @@ const SearchBar = () => {
   if (isOpen) {
     return <SearchDrawer isOpen={isOpen} onClose={onClose} />;
   }
-  return <IconButton type="submit" icon={<SearchIcon />} onClick={onOpen} />;
+  return (
+    <IconButton
+      type="submit"
+      icon={<SearchIcon />}
+      onClick={onOpen}
+      aria-label="search icon"
+    />
+  );
 };
 
 export default SearchBar;
